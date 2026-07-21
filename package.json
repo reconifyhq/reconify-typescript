@@ -2,7 +2,17 @@
   "name": "@reconify/sdk",
   "version": "0.1.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reconifyhq/reconify-typescript.git"
+  },
+  "homepage": "https://github.com/reconifyhq/reconify-typescript#readme",
+  "keywords": ["reconify", "sdk", "typescript", "integrity", "reconciliation"],
   "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -11,14 +21,20 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "openapi"],
+  "files": ["dist", "openapi", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "generate": "openapi-typescript openapi/reconify.openapi.json -o src/openapi-types.ts && node scripts/generate-client.mjs",
+    "check-generated": "npm run generate && git diff --exit-code -- src/client.ts src/models.ts src/openapi-types.ts src/operations.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "tsx scripts/check-openapi-coverage.ts"
+    "coverage": "tsx scripts/check-openapi-coverage.ts",
+    "verify": "npm run check-generated && npm run typecheck && npm run build && npm run coverage && npm test",
+    "prepublishOnly": "npm run verify"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
