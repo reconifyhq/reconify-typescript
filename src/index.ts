@@ -1,6 +1,7 @@
 export {
   ReconifyApiError,
   ReconifyClient,
+  ReconifyTimeoutError,
 } from "./client.js";
 export type { FetchLike, OperationId, ReconifyClientOptions, RequestParams, ResponseBody } from "./core/types.js";
 export { ApiTransport } from "./core/transport.js";

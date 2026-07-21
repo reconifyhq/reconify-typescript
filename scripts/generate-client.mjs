@@ -47,6 +47,14 @@ for (const [path, pathItem] of Object.entries(spec.paths)) {
       tag,
       module,
       className,
+      summary: (operation.summary ?? operation.description ?? `${method.toUpperCase()} ${path}`).split("\n")[0].trim(),
+      parameterDocs: [
+        ...(operation.parameters ?? []).map((parameter) => ({
+          name: `args.${parameter.in === "header" ? "headers" : parameter.in}.${parameter.name}`,
+          description: (parameter.description ?? `${parameter.in} parameter`).split("\n")[0].trim(),
+        })),
+        ...(operation.requestBody ? [{ name: "args.body", description: "JSON request body." }] : []),
+      ],
       requiresArgs: Boolean(
         operation.requestBody ||
           operation.parameters?.some((parameter) => parameter.in === "path" && parameter.required),
@@ -70,7 +78,7 @@ ${[...excludedPaths].map((path) => `  ${JSON.stringify(path)},`).join("\n")}
 ] as const;
 
 export const publicOperations = [
-${operations.map((operation) => `  ${JSON.stringify(operation)},`).join("\n")}
+${operations.map((operation) => `  ${JSON.stringify({ method: operation.method, path: operation.path, operationId: operation.operationId, methodName: operation.methodName, tag: operation.tag, module: operation.module, className: operation.className, requiresArgs: operation.requiresArgs })},`).join("\n")}
 ] as const satisfies readonly PublicOperation[];
 
 export const operationById = Object.fromEntries(
@@ -106,24 +114,105 @@ ${modelAliases}
 export type { components };
 `;
 
+const paginationByModule = {
+  events: {
+    imports: [
+      'import { iterateCursorPages } from "../core/pagination.js";',
+      'import type { Event } from "../models.js";',
+    ].join("\n"),
+    types: [
+      'type ListEventsParams = RequestParams<"list-events">;',
+      'export type IterateEventsOptions = Omit<ListEventsParams, "query"> & { query?: Omit<NonNullable<ListEventsParams["query"]>, "after"> };',
+    ].join("\n"),
+    methods: [
+      '',
+      '  /** Iterate through every event page using the API cursor. */',
+      '  async *iterateEvents(args?: IterateEventsOptions): AsyncGenerator<Event> {',
+      '    const query = args?.query;',
+      '    yield* iterateCursorPages<Event, ResponseBody<"list-events">>(',
+      '      (after) => this.listEvents({ ...args, query: { ...query, ...(after ? { after } : {}) } }),',
+      '      (page) => page.events,',
+      '    );',
+      '  }',
+    ].join("\n"),
+  },
+  issues: {
+    imports: [
+      'import { iterateCursorPages } from "../core/pagination.js";',
+      'import type { Issue } from "../models.js";',
+    ].join("\n"),
+    types: [
+      'type ListIssuesParams = RequestParams<"list-issues">;',
+      'export type IterateIssuesOptions = Omit<ListIssuesParams, "query"> & { query?: Omit<NonNullable<ListIssuesParams["query"]>, "after"> };',
+    ].join("\n"),
+    methods: [
+      '',
+      '  /** Iterate through every issue page using the API cursor. */',
+      '  async *iterateIssues(args?: IterateIssuesOptions): AsyncGenerator<Issue> {',
+      '    const query = args?.query;',
+      '    yield* iterateCursorPages<Issue, ResponseBody<"list-issues">>(',
+      '      (after) => this.listIssues({ ...args, query: { ...query, ...(after ? { after } : {}) } }),',
+      '      (page) => page.issues,',
+      '    );',
+      '  }',
+    ].join("\n"),
+  },
+  transactions: {
+    imports: [
+      'import { iterateCursorPages } from "../core/pagination.js";',
+      'import type { WalletTransaction } from "../models.js";',
+    ].join("\n"),
+    types: [
+      'type ListTransactionsParams = RequestParams<"list-wallet-transactions">;',
+      'export type IterateWalletTransactionsOptions = Omit<ListTransactionsParams, "query"> & { query?: Omit<NonNullable<ListTransactionsParams["query"]>, "after"> };',
+    ].join("\n"),
+    methods: [
+      '',
+      '  /** Iterate through every wallet transaction page using the API cursor. */',
+      '  async *iterateWalletTransactions(args?: IterateWalletTransactionsOptions): AsyncGenerator<WalletTransaction> {',
+      '    const query = args?.query;',
+      '    yield* iterateCursorPages<WalletTransaction, ResponseBody<"list-wallet-transactions">>(',
+      '      (after) => this.listWalletTransactions({ ...args, query: { ...query, ...(after ? { after } : {}) } }),',
+      '      (page) => page.transactions,',
+      '    );',
+      '  }',
+    ].join("\n"),
+  },
+};
+
 const moduleSources = new Map();
 for (const operation of operations) {
   if (!moduleSources.has(operation.module)) {
     moduleSources.set(operation.module, { className: operation.className, methods: [] });
   }
   const args = operation.requiresArgs ? `args: RequestParams<"${operation.operationId}">` : `args?: RequestParams<"${operation.operationId}">`;
-  moduleSources.get(operation.module).methods.push(`  ${operation.methodName}(${args}): Promise<ResponseBody<"${operation.operationId}">> {\n    return this.transport.request("${operation.operationId}", args);\n  }`);
+  const example = operation.requiresArgs ? "params" : "";
+  const documentation = [
+    "  /**",
+    `   * ${operation.summary}`,
+    "   * @param args Typed request parameters from the OpenAPI contract.",
+    ...operation.parameterDocs.map((parameter) => `   * @param ${parameter.name} ${parameter.description}`),
+    "   * @param args.request Optional cancellation, timeout, and retry controls.",
+    "   * @example",
+    `   * const result = await client.${operation.module}.${operation.methodName}(${example});`,
+    "   */",
+  ].join("\n");
+  moduleSources.get(operation.module).methods.push(`${documentation}\n  ${operation.methodName}(${args}): Promise<ResponseBody<"${operation.operationId}">> {\n    return this.transport.request("${operation.operationId}", args);\n  }`);
 }
 for (const [module, source] of moduleSources) {
+  const pagination = paginationByModule[module];
   fs.writeFileSync(
     `src/apis/${module}.ts`,
     `import type { ApiTransport } from "../core/transport.js";
 import type { RequestParams, ResponseBody } from "../core/types.js";
+${pagination ? `${pagination.imports}\n` : ""}
+${pagination ? `${pagination.types}\n` : ""}
 
 export class ${source.className} {
   constructor(private readonly transport: ApiTransport) {}
 
 ${source.methods.join("\n\n")}
+${pagination ? `\n${pagination.methods}` : ""}
 }
 `,
   );

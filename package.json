@@ -2,6 +2,7 @@
   "name": "@reconify/sdk",
   "version": "0.1.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/reconifyhq/reconify-typescript.git"
@@ -21,7 +22,7 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "LICENSE"],
   "publishConfig": {
     "access": "public"
   },

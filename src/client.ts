@@ -8,7 +8,7 @@ import { SearchApi } from "./apis/search.js";
 import { SetupApi } from "./apis/setup.js";
 import { TransactionsApi } from "./apis/transactions.js";
 import { WalletsApi } from "./apis/wallets.js";
-import { ApiTransport, ReconifyApiError } from "./core/transport.js";
+import { ApiTransport, ReconifyApiError, ReconifyTimeoutError } from "./core/transport.js";
 import type { ReconifyClientOptions } from "./core/types.js";
 
 export class ReconifyClient {
@@ -38,5 +38,5 @@ export class ReconifyClient {
   }
 }
 
-export { ReconifyApiError };
+export { ReconifyApiError, ReconifyTimeoutError };
 export type { FetchLike, ReconifyClientOptions, RequestParams, ResponseBody } from "./core/types.js";
