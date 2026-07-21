@@ -1,0 +1,30 @@
+{
+  "name": "@reconify/sdk",
+  "version": "0.1.0",
+  "description": "Typed TypeScript SDK for the Reconify Public API",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "openapi"],
+  "scripts": {
+    "generate": "openapi-typescript openapi/reconify.openapi.json -o src/openapi-types.ts && node scripts/generate-client.mjs",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "tsx scripts/check-openapi-coverage.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "openapi-typescript": "^7.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
