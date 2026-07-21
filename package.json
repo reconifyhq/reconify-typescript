@@ -21,19 +21,20 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "openapi", "README.md"],
+  "files": ["dist", "README.md"],
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "generate": "openapi-typescript openapi/reconify.openapi.json -o src/openapi-types.ts && node scripts/generate-client.mjs",
-    "check-generated": "npm run generate && git diff --exit-code -- src/client.ts src/models.ts src/openapi-types.ts src/operations.ts",
+    "generate": "node scripts/generate.mjs",
+    "check-generated": "node scripts/check-generated.mjs",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "tsx scripts/check-openapi-coverage.ts",
-    "verify": "npm run check-generated && npm run typecheck && npm run build && npm run coverage && npm test",
+    "verify": "npm run typecheck && npm run build && npm test",
+    "verify:openapi": "npm run check-generated && npm run coverage",
     "prepublishOnly": "npm run verify"
   },
   "devDependencies": {

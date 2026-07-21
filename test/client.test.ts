@@ -16,7 +16,7 @@ describe("ReconifyClient", () => {
       },
     });
 
-    await client.getEvent({ path: { id: "event/with space" } });
+    await client.events.getEvent({ path: { id: "event/with space" } });
 
     expect(request?.url).toBe("https://api.example.test/v1/events/event%2Fwith%20space");
     expect(request?.method).toBe("GET");
@@ -34,10 +34,10 @@ describe("ReconifyClient", () => {
       },
     });
 
-    await client.listEvents({ query: { source_id: "source-1", limit: 10 } });
+    await client.events.listEvents({ query: { source_id: "source-1", limit: 10 } });
     expect(request?.url).toBe("https://api.example.test/v1/events?source_id=source-1&limit=10");
 
-    await client.putAlertRule({
+    await client.alerts.putAlertRule({
       body: {
         breachEnabled: true,
         channels: [],
@@ -68,7 +68,7 @@ describe("ReconifyClient", () => {
       fetch: async () => new Response(undefined, { status: 204 }),
     });
 
-    await expect(client.deleteLedgerSource({ path: { id: "source-1" } })).resolves.toBeUndefined();
+    await expect(client.ledger.deleteLedgerSource({ path: { id: "source-1" } })).resolves.toBeUndefined();
   });
 
   it("raises a typed error with the problem response body", async () => {
@@ -78,7 +78,7 @@ describe("ReconifyClient", () => {
       fetch: async () => response({ detail: "Not found" }, 404),
     });
 
-    const error = await client.getEvent({ path: { id: "missing" } }).catch((value) => value);
+    const error = await client.events.getEvent({ path: { id: "missing" } }).catch((value) => value);
     expect(error).toBeInstanceOf(ReconifyApiError);
     expect(error).toMatchObject({ status: 404, body: { detail: "Not found" }, message: "Not found" });
   });

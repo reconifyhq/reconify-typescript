@@ -10,7 +10,7 @@ const client = new ReconifyClient({
   baseUrl: "https://api.reconify.com",
 });
 
-const events = await client.listEvents({ query: { limit: 25 } });
+const events = await client.events.listEvents({ query: { limit: 25 } });
 ```
 
 The client appends `/v1` to `baseUrl` unless it already ends in `/v1`. A custom `fetch` implementation can be supplied for testing or alternate runtimes.
@@ -21,12 +21,16 @@ The SDK exposes 50 public operations. Deep reconciliation adjustment, lifecycle,
 
 ```sh
 npm install
-npm run generate
-npm run check-generated
 npm run typecheck
-npm run coverage
 npm test
 npm run build
+```
+
+The OpenAPI document is intentionally not stored in this repository. To regenerate the typed source and verify coverage, provide it externally:
+
+```sh
+RECONIFY_OPENAPI_SPEC=/path/to/reconify.openapi.json npm run generate
+RECONIFY_OPENAPI_SPEC=/path/to/reconify.openapi.json npm run verify:openapi
 ```
 
 The package is published from a GitHub release by `.github/workflows/publish.yml`. Configure an npm automation token as the repository environment secret `NPM_TOKEN`; the workflow uses npm provenance and never stores API credentials.

@@ -1,8 +1,21 @@
 import fs from "node:fs";
 import { excludedOperations, EXCLUDED_DEEP_RECONCILIATION_PATHS, publicOperations } from "../src/operations.js";
-import { ReconifyClient } from "../src/client.js";
+import { AlertsApi } from "../src/apis/alerts.js";
+import { EventsApi } from "../src/apis/events.js";
+import { IngestionApi } from "../src/apis/ingestion.js";
+import { IssuesApi } from "../src/apis/issues.js";
+import { LedgerApi } from "../src/apis/ledger.js";
+import { ReconciliationsApi } from "../src/apis/reconciliations.js";
+import { SearchApi } from "../src/apis/search.js";
+import { SetupApi } from "../src/apis/setup.js";
+import { TransactionsApi } from "../src/apis/transactions.js";
+import { WalletsApi } from "../src/apis/wallets.js";
 
-const spec = JSON.parse(fs.readFileSync("openapi/reconify.openapi.json", "utf8")) as {
+const specPath = process.env.RECONIFY_OPENAPI_SPEC;
+if (!specPath) {
+  throw new Error("Set RECONIFY_OPENAPI_SPEC to the external OpenAPI JSON path before checking coverage.");
+}
+const spec = JSON.parse(fs.readFileSync(specPath, "utf8")) as {
   paths: Record<string, Record<string, { operationId?: string }>>;
 };
 const methods = new Set(["get", "post", "put", "patch", "delete"]);
@@ -36,13 +49,29 @@ if (excludedKeys.some((operation) => actual.includes(operation))) {
   throw new Error("An excluded operation is present in the public operation registry");
 }
 
-const methodNames = new Set(Object.getOwnPropertyNames(ReconifyClient.prototype));
+const moduleConstructors = {
+  alerts: AlertsApi,
+  events: EventsApi,
+  ingestion: IngestionApi,
+  issues: IssuesApi,
+  ledger: LedgerApi,
+  reconciliations: ReconciliationsApi,
+  search: SearchApi,
+  setup: SetupApi,
+  transactions: TransactionsApi,
+  wallets: WalletsApi,
+};
 for (const operation of publicOperations) {
-  if (!methodNames.has(operation.methodName)) throw new Error(`Missing client method ${operation.methodName}`);
+  const apiModule = moduleConstructors[operation.module as keyof typeof moduleConstructors];
+  if (!apiModule || !Object.getOwnPropertyNames(apiModule.prototype).includes(operation.methodName)) {
+    throw new Error(`Missing ${operation.module}.${operation.methodName}`);
+  }
 }
 for (const operation of excludedOperations) {
   const methodName = operation.operationId.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-  if (methodNames.has(methodName)) throw new Error(`Excluded client method ${methodName} is present`);
+  if (Object.values(moduleConstructors).some((apiModule) => Object.getOwnPropertyNames(apiModule.prototype).includes(methodName))) {
+    throw new Error(`Excluded API method ${methodName} is present`);
+  }
 }
 
 const retainedReconciliationKeys = [
