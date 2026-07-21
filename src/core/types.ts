@@ -4,7 +4,7 @@ export type OperationId = keyof operations & string;
 type Operation<Id extends OperationId> = operations[Id];
 type ParameterGroup<Op, Group extends "path" | "query" | "header"> =
   Op extends { parameters: infer Parameters }
-    ? Parameters extends Record<Group, infer Value>
+    ? Parameters extends { [Key in Group]?: infer Value }
       ? NonNullable<Value>
       : never
     : never;
@@ -25,21 +25,15 @@ type ResponseBodyFromResponse<Response> = Response extends { content: infer Cont
   : void;
 
 export type RequestParams<Id extends OperationId> =
-  ("path" extends keyof Operation<Id>
-    ? [ParameterGroup<Operation<Id>, "path">] extends [never]
-      ? {}
-      : { path: ParameterGroup<Operation<Id>, "path"> }
-    : {}) &
-  ("query" extends keyof Operation<Id>
-    ? [ParameterGroup<Operation<Id>, "query">] extends [never]
-      ? {}
-      : { query?: ParameterGroup<Operation<Id>, "query"> }
-    : {}) &
-  ("header" extends keyof Operation<Id>
-    ? [ParameterGroup<Operation<Id>, "header">] extends [never]
-      ? {}
-      : { headers?: ParameterGroup<Operation<Id>, "header"> }
-    : {}) &
+  ([ParameterGroup<Operation<Id>, "path">] extends [never]
+    ? {}
+    : { path: ParameterGroup<Operation<Id>, "path"> }) &
+  ([ParameterGroup<Operation<Id>, "query">] extends [never]
+    ? {}
+    : { query?: ParameterGroup<Operation<Id>, "query"> }) &
+  ([ParameterGroup<Operation<Id>, "header">] extends [never]
+    ? {}
+    : { headers?: ParameterGroup<Operation<Id>, "header"> }) &
   ([JsonBody<Operation<Id>>] extends [never] ? {} : { body: JsonBody<Operation<Id>> });
 
 export type ResponseBody<Id extends OperationId> = ResponseBodyFromResponse<SuccessResponse<Operation<Id>>>;
