@@ -1,9 +1,9 @@
-# @reconify/sdk
+# @reconifyhq/sdk
 
 Typed TypeScript client for the Reconify Public API.
 
 ```ts
-import { ReconifyApiError, ReconifyClient } from "@reconify/sdk";
+import { ReconifyApiError, ReconifyClient } from "@reconifyhq/sdk";
 
 const client = new ReconifyClient({
   apiKey: "rk_...",

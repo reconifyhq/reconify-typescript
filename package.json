@@ -1,5 +1,5 @@
 {
-  "name": "@reconify/sdk",
+  "name": "@reconifyhq/sdk",
   "version": "0.1.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
   "license": "MIT",
