@@ -1,5 +1,5 @@
 {
-  "name": "@reconify/sdk",
+  "name": "@reconifyhq/sdk",
   "version": "0.1.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
   "license": "MIT",
@@ -36,7 +36,8 @@
     "coverage": "tsx scripts/check-openapi-coverage.ts",
     "verify": "npm run typecheck && npm run build && npm test",
     "verify:openapi": "npm run check-generated && npm run coverage",
-    "prepublishOnly": "npm run verify"
+    "prepublishOnly": "npm run verify",
+    "preversion": "npm run verify"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
