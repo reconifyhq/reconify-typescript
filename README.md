@@ -80,4 +80,15 @@ RECONIFY_OPENAPI_SPEC=/path/to/reconify.openapi.json npm run generate
 RECONIFY_OPENAPI_SPEC=/path/to/reconify.openapi.json npm run verify:openapi
 ```
 
+## Release
+
+Versions are bumped with npm's built-in tooling — no extra dependency required:
+
+```sh
+npm version patch   # or minor / major
+git push --follow-tags
+```
+
+`npm version` runs `preversion` (the full `verify` suite) before touching anything, then bumps `package.json` and `package-lock.json`, and creates a `vX.Y.Z` commit and tag. Pushing the tag alone does **not** publish anything — create a GitHub release from that tag (or run `gh release create vX.Y.Z --generate-notes`) to trigger `.github/workflows/publish.yml`, which builds, verifies, and publishes to npm with provenance.
+
 The package is published from a GitHub release by `.github/workflows/publish.yml`. Configure an npm automation token as the repository environment secret `NPM_TOKEN`; the workflow uses npm provenance and never stores API credentials.
