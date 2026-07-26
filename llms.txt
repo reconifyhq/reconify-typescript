@@ -1,0 +1,18 @@
+# Reconify TypeScript SDK
+
+> A typed TypeScript client for the Reconify Public API, published as `@reconifyhq/sdk`.
+
+The primary SDK workflow is ingesting integrity events with a typed event batch. The SDK also exposes typed API modules for issues, ledger sources and transactions, reconciliations, setup, wallets, search, and read-only event access. It provides cancellation, request timeouts, retries, structured API errors, and cursor pagination helpers.
+
+## Documentation
+
+- [README](https://github.com/reconifyhq/reconify-typescript/blob/main/README.md): Installation, client initialization, common usage, development, and release workflow.
+- [Getting started](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/getting-started.md): Install the package, configure authentication, and make a first request.
+- [Request options](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/request-options.md): Typed arguments, cancellation, timeouts, retries, pagination, custom fetch, and errors.
+- [Workflows](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/workflows.md): Ingestion, ledger, reconciliation, issue, setup, wallet, and search examples.
+- [API reference](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/api-reference.md): Public modules, operations, exported types, and intentionally excluded endpoints.
+
+## Source
+
+- [Client implementation](https://github.com/reconifyhq/reconify-typescript/blob/main/src/client.ts): The `ReconifyClient` facade and public API module composition.
+- [Transport implementation](https://github.com/reconifyhq/reconify-typescript/blob/main/src/core/transport.ts): URL construction, authentication, retries, timeouts, and error parsing.

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Reconify TypeScript SDK",
+  "description": "Typed TypeScript SDK for the Reconify Public API with retries, timeouts, cancellation, cursor pagination, structured errors, and generated OpenAPI types.",
+  "branch": "main",
+  "folders": [],
+  "excludeFolders": ["test", "scripts", ".github"],
+  "excludeFiles": ["package-lock.json", "LICENSE"],
+  "rules": [
+    "Prioritize ingesting integrity events as the primary SDK workflow; show ingestion before read-only listing or reconciliation workflows.",
+    "Import the SDK from @reconifyhq/sdk; do not import internal source files.",
+    "Create ReconifyClient with an apiKey and baseUrl, and never hardcode credentials in source code.",
+    "Use client module properties such as client.events, client.ledger, client.reconciliations, and client.issues.",
+    "Pass typed path, query, headers, body, and request options through each operation's single argument object.",
+    "Use iterateEvents, iterateIssues, or iterateWalletTransactions for cursor-paginated collections where those helpers exist.",
+    "The SDK intentionally excludes deep reconciliation adjustment, lifecycle, evidence, report-item, and signoff operations."
+  ]
+}
