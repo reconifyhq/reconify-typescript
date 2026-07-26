@@ -7,6 +7,7 @@
   "excludeFolders": ["test", "scripts", ".github"],
   "excludeFiles": ["package-lock.json", "LICENSE"],
   "rules": [
+    "Prioritize ingesting integrity events as the primary SDK workflow; show ingestion before read-only listing or reconciliation workflows.",
     "Import the SDK from @reconifyhq/sdk; do not import internal source files.",
     "Create ReconifyClient with an apiKey and baseUrl, and never hardcode credentials in source code.",
     "Use client module properties such as client.events, client.ledger, client.reconciliations, and client.issues.",

@@ -1,6 +1,33 @@
 # API reference
 
-The package's supported entrypoint is `@reconifyhq/sdk`. Every public operation has an example below; replace placeholder IDs and input values with values from your application.
+The package's supported entrypoint is `@reconifyhq/sdk`. Event ingestion is the primary workflow. Every public operation has an example below; replace placeholder IDs and input values with values from your application.
+
+## Ingestion
+
+Use a typed `IngestEventsInputBody` containing required `PublicEvent` fields:
+
+```ts
+import type { IngestEventsInputBody } from "@reconifyhq/sdk";
+
+const eventBatch: IngestEventsInputBody = {
+  events: [
+    {
+      amountMinor: 1500,
+      currency: "USD",
+      eventType: "payment.succeeded",
+      occurredAt: "2026-07-26T12:00:00Z",
+      sourceEventId: "payment-123",
+      sourceId: "source-123",
+      externalReference: "order-123",
+    },
+  ],
+};
+```
+
+| Operation | Example |
+| --- | --- |
+| `ingestIntegrityEvents` | `await client.ingestion.ingestIntegrityEvents({ body: eventBatch });` |
+| `ingestIntegrityTestEvents` | `await client.ingestion.ingestIntegrityTestEvents({ headers: { "X-Integrity-Test-Session": sessionId }, body: eventBatch });` |
 
 ## Alerts
 
@@ -24,13 +51,6 @@ for await (const event of client.events.iterateEvents({ query: { limit: 100 } })
   console.log(event.id);
 }
 ```
-
-## Ingestion
-
-| Operation | Example |
-| --- | --- |
-| `ingestIntegrityEvents` | `await client.ingestion.ingestIntegrityEvents({ body: eventBatch });` |
-| `ingestIntegrityTestEvents` | `await client.ingestion.ingestIntegrityTestEvents({ headers: { "X-Integrity-Test-Session": sessionId }, body: eventBatch });` |
 
 ## Issues
 

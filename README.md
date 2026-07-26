@@ -12,7 +12,7 @@ npm install @reconifyhq/sdk
 
 The package supports Node.js 18 or newer and runtimes with a standard `fetch` implementation.
 
-## Quick start
+## Ingest your first event
 
 ```ts
 import { ReconifyClient } from "@reconifyhq/sdk";
@@ -22,16 +22,28 @@ const client = new ReconifyClient({
   baseUrl: "https://api.reconify.com",
 });
 
-const events = await client.events.listEvents({
-  query: { limit: 25 },
+const result = await client.ingestion.ingestIntegrityEvents({
+  body: {
+    events: [
+      {
+        amountMinor: 1500,
+        currency: "USD",
+        eventType: "payment.succeeded",
+        occurredAt: "2026-07-26T12:00:00Z",
+        sourceEventId: "payment-123",
+        sourceId: "source-123",
+        externalReference: "order-123",
+      },
+    ],
+  },
 });
 
-console.log(events.events);
+console.log(result);
 ```
 
 Keep API keys in environment variables or a secret manager. The client sends the key as a Bearer token. `baseUrl` may be `https://api.reconify.com` or include `/v1`; the client appends `/v1` when it is not already present.
 
-For a first-use walkthrough, see [Getting started](docs/getting-started.md). For task-oriented examples, see [Workflows](docs/workflows.md).
+For a typed first-use walkthrough, see [Getting started](docs/getting-started.md). For ingestion and downstream workflows, see [Workflows](docs/workflows.md).
 
 ## Public API
 
@@ -39,9 +51,9 @@ Each module is available as a property on `ReconifyClient`:
 
 | Module | Use it for |
 | --- | --- |
+| `client.ingestion` | Integrity event ingestion and isolated test events |
 | `client.alerts` | Alert rules |
 | `client.events` | Canonical events and audited field reveal |
-| `client.ingestion` | Integrity event ingestion and isolated test events |
 | `client.issues` | Issue search, details, notes, resolution, and deliveries |
 | `client.ledger` | Ledger sources, periods, and transactions |
 | `client.reconciliations` | Sources, schedules, reconciliation runs, and status |
@@ -105,21 +117,37 @@ const client = new ReconifyClient({
 
 See [Request options](docs/request-options.md) for the complete request contract.
 
-## Common workflows
+## Event ingestion
 
 ### Ingest integrity events
 
 ```ts
-import type { RequestParams } from "@reconifyhq/sdk";
+import type { IngestEventsInputBody } from "@reconifyhq/sdk";
 
-const params: RequestParams<"ingest-integrity-events"> = {
-  body: eventBatch,
+const eventBatch: IngestEventsInputBody = {
+  events: [
+    {
+      amountMinor: 1500,
+      currency: "USD",
+      eventType: "payment.succeeded",
+      occurredAt: "2026-07-26T12:00:00Z",
+      sourceEventId: "payment-123",
+      sourceId: "source-123",
+      externalReference: "order-123",
+    },
+  ],
 };
 
-const result = await client.ingestion.ingestIntegrityEvents(params);
+const result = await client.ingestion.ingestIntegrityEvents({
+  body: eventBatch,
+});
 ```
 
-`eventBatch` must match the generated `IngestEventsInputBody` type. For isolated test data, create a test session first and pass the required `X-Integrity-Test-Session` header to the test ingestion operation.
+The `events` array contains `PublicEvent` objects. Each event requires `amountMinor`, `currency`, `eventType`, `occurredAt`, `sourceEventId`, and `sourceId`; optional references and metadata can be added as needed. The endpoint validates and durably publishes the batch.
+
+For isolated test data, create a test session first and pass the required `X-Integrity-Test-Session` header to `ingestIntegrityTestEvents`.
+
+## Other workflows
 
 ### Work with a ledger
 

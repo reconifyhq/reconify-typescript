@@ -16,14 +16,26 @@ const client = new ReconifyClient({
 ```ts
 import type { RequestParams } from "@reconifyhq/sdk";
 
-const request: RequestParams<"ingest-integrity-events"> = {
-  body: eventBatch,
+const eventBatch: RequestParams<"ingest-integrity-events">["body"] = {
+  events: [
+    {
+      amountMinor: 1500,
+      currency: "USD",
+      eventType: "payment.succeeded",
+      occurredAt: "2026-07-26T12:00:00Z",
+      sourceEventId: "payment-123",
+      sourceId: "source-123",
+      externalReference: "order-123",
+    },
+  ],
 };
 
-const result = await client.ingestion.ingestIntegrityEvents(request);
+const result = await client.ingestion.ingestIntegrityEvents({
+  body: eventBatch,
+});
 ```
 
-`eventBatch` must satisfy the generated `IngestEventsInputBody` contract. For isolated test data, use `client.setup.createTestSession`, then submit events with `client.setup.submitTestSessionEvents` and its required test-session header.
+The `events` array contains `PublicEvent` objects. Each event requires `amountMinor`, `currency`, `eventType`, `occurredAt`, `sourceEventId`, and `sourceId`; optional references and metadata can be added as needed. For isolated test data, use `client.setup.createTestSession`, then submit events with `client.setup.submitTestSessionEvents` and its required test-session header.
 
 ## Manage ledger sources and transactions
 

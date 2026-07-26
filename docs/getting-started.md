@@ -30,21 +30,43 @@ new ReconifyClient({
 });
 ```
 
-## Make a request
+## Ingest your first event
 
-Each operation is grouped by resource and receives one typed argument object:
+The primary SDK workflow is submitting a typed batch of integrity events:
+
+```ts
+import type { IngestEventsInputBody } from "@reconifyhq/sdk";
+
+const eventBatch: IngestEventsInputBody = {
+  events: [
+    {
+      amountMinor: 1500,
+      currency: "USD",
+      eventType: "payment.succeeded",
+      occurredAt: "2026-07-26T12:00:00Z",
+      sourceEventId: "payment-123",
+      sourceId: "source-123",
+      externalReference: "order-123",
+    },
+  ],
+};
+
+const result = await client.ingestion.ingestIntegrityEvents({
+  body: eventBatch,
+});
+```
+
+The `events` array contains `PublicEvent` objects. Each event requires `amountMinor`, `currency`, `eventType`, `occurredAt`, `sourceEventId`, and `sourceId`. Use `ingestIntegrityTestEvents` with the required test-session header for isolated test data.
+
+Every operation is grouped by resource and receives one typed argument object. For example, read an event after ingestion with:
 
 ```ts
 const event = await client.events.getEvent({
   path: { id: "event-123" },
 });
-
-const page = await client.events.listEvents({
-  query: { source_id: "source-123", limit: 25 },
-});
 ```
 
-The public modules are `alerts`, `events`, `ingestion`, `issues`, `ledger`, `reconciliations`, `search`, `setup`, `transactions`, and `wallets`.
+The public modules are `ingestion`, `alerts`, `events`, `issues`, `ledger`, `reconciliations`, `search`, `setup`, `transactions`, and `wallets`.
 
 ## Use generated types
 
