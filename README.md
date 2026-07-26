@@ -2,67 +2,185 @@
 
 Typed TypeScript client for the Reconify Public API.
 
+The SDK exposes 50 public operations through a single `ReconifyClient`. It includes generated OpenAPI types, request cancellation, timeouts, retries, structured API errors, and cursor pagination helpers.
+
+## Installation
+
+```sh
+npm install @reconifyhq/sdk
+```
+
+The package supports Node.js 18 or newer and runtimes with a standard `fetch` implementation.
+
+## Quick start
+
 ```ts
-import { ReconifyApiError, ReconifyClient } from "@reconifyhq/sdk";
+import { ReconifyClient } from "@reconifyhq/sdk";
 
 const client = new ReconifyClient({
-  apiKey: "rk_...",
+  apiKey: process.env.RECONIFY_API_KEY!,
   baseUrl: "https://api.reconify.com",
 });
 
-const events = await client.events.listEvents({ query: { limit: 25 } });
+const events = await client.events.listEvents({
+  query: { limit: 25 },
+});
+
+console.log(events.events);
 ```
 
-The client appends `/v1` to `baseUrl` unless it already ends in `/v1`. A custom `fetch` implementation can be supplied for testing or alternate runtimes.
+Keep API keys in environment variables or a secret manager. The client sends the key as a Bearer token. `baseUrl` may be `https://api.reconify.com` or include `/v1`; the client appends `/v1` when it is not already present.
 
-The SDK exposes 50 public operations. Deep reconciliation adjustment, lifecycle, evidence, report-item, and signoff operations are intentionally excluded. The OpenAPI document is intentionally maintained outside this repository and is only needed when regenerating the typed source.
+For a first-use walkthrough, see [Getting started](docs/getting-started.md). For task-oriented examples, see [Workflows](docs/workflows.md).
+
+## Public API
+
+Each module is available as a property on `ReconifyClient`:
+
+| Module | Use it for |
+| --- | --- |
+| `client.alerts` | Alert rules |
+| `client.events` | Canonical events and audited field reveal |
+| `client.ingestion` | Integrity event ingestion and isolated test events |
+| `client.issues` | Issue search, details, notes, resolution, and deliveries |
+| `client.ledger` | Ledger sources, periods, and transactions |
+| `client.reconciliations` | Sources, schedules, reconciliation runs, and status |
+| `client.search` | Cross-resource integrity search |
+| `client.setup` | Integrations, sources, and test sessions |
+| `client.transactions` | Wallet transactions |
+| `client.wallets` | Wallets and balances |
+
+The complete operation and export list is in the [API reference](docs/api-reference.md). Import public classes, errors, and types from `@reconifyhq/sdk`; internal source paths are not part of the supported interface.
 
 ## Requests
 
-Every operation accepts typed path, query, header, and body parameters. Requests can be cancelled with `AbortSignal` and bounded with a per-request timeout:
+Operations accept one typed argument object. Use `path`, `query`, `headers`, and `body` according to the operation's OpenAPI contract:
+
+```ts
+const event = await client.events.getEvent({
+  path: { id: "event-123" },
+});
+
+const filtered = await client.events.listEvents({
+  query: {
+    source_id: "source-123",
+    processing_status: "processed",
+    limit: 25,
+  },
+});
+```
+
+Request-specific cancellation, timeout, and retry settings are passed through `request`:
 
 ```ts
 const controller = new AbortController();
 
 const events = await client.events.listEvents({
   query: { limit: 25 },
-  request: { signal: controller.signal, timeoutMs: 10_000 },
+  request: {
+    signal: controller.signal,
+    timeoutMs: 10_000,
+    retry: { maxAttempts: 2 },
+  },
 });
 
 controller.abort();
 ```
 
-The default timeout is 30 seconds. Retries apply to idempotent requests for `429`, `503`, and transient fetch failures. Configure them explicitly when constructing the client; non-idempotent retries are opt-in:
+The default timeout is 30 seconds. Retries apply to idempotent requests for `429`, `503`, and transient fetch failures. Configure client-wide defaults or opt into non-idempotent retries explicitly:
 
 ```ts
 const client = new ReconifyClient({
-  apiKey: "rk_...",
+  apiKey: process.env.RECONIFY_API_KEY!,
   baseUrl: "https://api.reconify.com",
-  retry: { maxAttempts: 3, baseDelayMs: 250, maxDelayMs: 5_000 },
+  timeoutMs: 30_000,
+  retry: {
+    maxAttempts: 3,
+    baseDelayMs: 250,
+    maxDelayMs: 5_000,
+    retryNonIdempotent: false,
+  },
 });
 ```
 
-Cursor-based collections provide async iterators, so callers can process every page naturally:
+See [Request options](docs/request-options.md) for the complete request contract.
+
+## Common workflows
+
+### Ingest integrity events
 
 ```ts
-for await (const event of client.events.iterateEvents({ query: { limit: 100 } })) {
+import type { RequestParams } from "@reconifyhq/sdk";
+
+const params: RequestParams<"ingest-integrity-events"> = {
+  body: eventBatch,
+};
+
+const result = await client.ingestion.ingestIntegrityEvents(params);
+```
+
+`eventBatch` must match the generated `IngestEventsInputBody` type. For isolated test data, create a test session first and pass the required `X-Integrity-Test-Session` header to the test ingestion operation.
+
+### Work with a ledger
+
+```ts
+const sources = await client.ledger.listLedgerSources({
+  query: { limit: 50 },
+});
+
+const transactions = await client.ledger.listTransactions({
+  path: { id: "source-123" },
+  query: { period_key: "2026-01", limit: 100 },
+});
+```
+
+### Iterate cursor-paginated collections
+
+```ts
+for await (const event of client.events.iterateEvents({
+  query: { limit: 100 },
+})) {
   console.log(event.id);
 }
 ```
 
-API failures are structured. `ReconifyApiError` exposes `status`, `code`, `field`, `details`, and the parsed response `body`:
+Cursor iterators are currently provided for events, issues, and wallet transactions. Offset-paginated operations accept their typed `offset` and `limit` query parameters directly.
+
+More examples are grouped in [Workflows](docs/workflows.md).
+
+## Errors
+
+API failures throw `ReconifyApiError`, which exposes the HTTP `status`, API `code`, optional `field`, parsed response `body`, and message:
 
 ```ts
+import { ReconifyApiError } from "@reconifyhq/sdk";
+
 try {
   await client.events.getEvent({ path: { id: "missing" } });
 } catch (error) {
   if (error instanceof ReconifyApiError) {
-    console.error(error.code, error.field, error.message);
+    console.error(error.status, error.code, error.field, error.body);
   }
 }
 ```
 
-All public methods include generated JSDoc with their operation summary, parameter contract, and a usage example. API modules are exposed as named properties such as `client.events`, `client.reconciliations`, and `client.transactions` to keep operation names predictable.
+Timeouts throw `ReconifyTimeoutError`. Abort signals preserve the signal's cancellation reason.
+
+## Alternate fetch implementations
+
+Pass a compatible `fetch` implementation for tests, polyfilled runtimes, or custom HTTP behavior:
+
+```ts
+const client = new ReconifyClient({
+  apiKey: process.env.RECONIFY_API_KEY!,
+  baseUrl: "https://api.reconify.com",
+  fetch: myFetch,
+});
+```
+
+## Supported API boundary
+
+The SDK intentionally excludes deep reconciliation adjustment, lifecycle, evidence, report-item, and signoff operations. They remain represented in the generated OpenAPI types for coverage checks but are not exposed through `ReconifyClient`. See the [API reference](docs/api-reference.md) for the exact boundary.
 
 ## Development
 
@@ -71,24 +189,25 @@ npm install
 npm run typecheck
 npm test
 npm run build
+npm run verify
 ```
 
-The OpenAPI document is intentionally not stored in this repository. To regenerate the typed source and verify coverage, provide it externally:
+The OpenAPI document is intentionally maintained outside this repository. To regenerate the typed source and verify API coverage, provide it externally:
 
 ```sh
 RECONIFY_OPENAPI_SPEC=/path/to/reconify.openapi.json npm run generate
 RECONIFY_OPENAPI_SPEC=/path/to/reconify.openapi.json npm run verify:openapi
 ```
 
+`npm run verify` also checks the Context7 configuration, documentation links, and npm package contents.
+
 ## Release
 
-Versions are bumped with npm's built-in tooling — no extra dependency required:
+Versions are bumped with npm's built-in tooling:
 
 ```sh
 npm version patch   # or minor / major
 git push --follow-tags
 ```
 
-`npm version` runs `preversion` (the full `verify` suite) before touching anything, then bumps `package.json` and `package-lock.json`, and creates a `vX.Y.Z` commit and tag. Pushing the tag alone does **not** publish anything — create a GitHub release from that tag (or run `gh release create vX.Y.Z --generate-notes`) to trigger `.github/workflows/publish.yml`, which builds, verifies, and publishes to npm with provenance.
-
-The package is published from a GitHub release by `.github/workflows/publish.yml`. Configure an npm automation token as the repository environment secret `NPM_TOKEN`; the workflow uses npm provenance and never stores API credentials.
+`npm version` runs the full verification suite before updating `package.json` and `package-lock.json`. A GitHub release from the resulting tag triggers `.github/workflows/publish.yml`, which builds, verifies, and publishes to npm with provenance.
