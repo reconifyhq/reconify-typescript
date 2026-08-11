@@ -1,0 +1,18 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+setup = "npm ci"
+run_mode = "concurrent"
+
+[scripts.run.verify]
+command = "npm run verify"
+icon = "check"
+default = true
+
+[scripts.run.sync-contract]
+command = "npm run sync-contract"
+icon = "refresh-cw"
+
+[scripts.run.release-check]
+command = "npm run verify && npm run verify:openapi && npm pack --dry-run"
+icon = "package-check"

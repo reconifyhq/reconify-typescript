@@ -58,7 +58,8 @@ export class ReconifyApiError extends Error {
     const problem = asRecord(body);
     const details = errorDetails(body);
     const detail = typeof problem?.detail === "string" ? problem.detail : undefined;
-    super(detail ?? `Reconify API request failed with HTTP ${response.status}`);
+    const message = typeof problem?.message === "string" ? problem.message : undefined;
+    super(detail ?? message ?? `Reconify API request failed with HTTP ${response.status}`);
     this.name = "ReconifyApiError";
     this.status = response.status;
     this.statusText = response.statusText;
@@ -85,7 +86,7 @@ const isJsonResponse = (response: Response): boolean => response.headers.get("co
 
 const normalizeBaseUrl = (baseUrl: string): string => {
   const normalized = baseUrl.replace(/\/+$/, "");
-  return normalized.endsWith("/v1") ? normalized : `${normalized}/v1`;
+  return normalized.endsWith("/v1") ? normalized.slice(0, -3) : normalized;
 };
 
 const pathWithParams = (template: string, path: Record<string, unknown> | undefined): string =>
@@ -144,10 +145,13 @@ export class ApiTransport {
   private readonly retry: Required<Pick<RetryOptions, "maxAttempts" | "baseDelayMs" | "maxDelayMs">> & Pick<RetryOptions, "retryNonIdempotent">;
 
   constructor(options: ReconifyClientOptions) {
-    if (!options.apiKey) throw new TypeError("apiKey is required");
-    if (!options.baseUrl) throw new TypeError("baseUrl is required");
-    this.apiKey = options.apiKey;
-    this.baseUrl = normalizeBaseUrl(options.baseUrl);
+    const environment = typeof process === "undefined" ? undefined : process.env;
+    const apiKey = options.apiKey ?? environment?.RECONIFY_API_KEY;
+    const baseUrl = options.baseUrl ?? environment?.RECONIFY_API_URL ?? "https://api.reconifyhq.com";
+    if (!apiKey) throw new TypeError("apiKey is required; set apiKey or RECONIFY_API_KEY");
+    if (!apiKey.startsWith("rk_")) throw new TypeError("Reconify public API keys must start with rk_");
+    this.apiKey = apiKey;
+    this.baseUrl = normalizeBaseUrl(baseUrl);
     this.fetcher = options.fetch ?? globalThis.fetch.bind(globalThis);
     this.defaultHeaders = options.headers ?? {};
     this.timeoutMs = options.timeoutMs ?? 30_000;

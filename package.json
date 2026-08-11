@@ -1,6 +1,6 @@
 {
   "name": "@reconifyhq/sdk",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
   "license": "MIT",
   "repository": {
@@ -27,16 +27,18 @@
     "access": "public"
   },
   "scripts": {
+    "fetch-contract": "node scripts/fetch-contract.mjs",
     "generate": "node scripts/generate.mjs",
     "check-generated": "node scripts/check-generated.mjs",
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "check-context7": "node scripts/check-context7.mjs",
     "coverage": "tsx scripts/check-openapi-coverage.ts",
     "verify": "npm run check-context7 && npm run typecheck && npm run build && npm test",
-    "verify:openapi": "npm run check-generated && npm run coverage",
+    "verify:openapi": "npm run fetch-contract && npm run check-generated && npm run coverage",
+    "sync-contract": "node scripts/fetch-contract.mjs --latest && npm run generate && npm run coverage",
     "prepublishOnly": "npm run verify",
     "preversion": "npm run verify"
   },

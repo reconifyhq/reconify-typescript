@@ -11,24 +11,10 @@ export class EventsApi {
   constructor(private readonly transport: ApiTransport) {}
 
   /**
-   * List canonical events
+   * List events
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.query.source_id query parameter
-   * @param args.query.event_type query parameter
-   * @param args.query.correlation_namespace query parameter
-   * @param args.query.external_reference query parameter
-   * @param args.query.currency query parameter
-   * @param args.query.amount_min query parameter
-   * @param args.query.amount_max query parameter
-   * @param args.query.q query parameter
-   * @param args.query.processing_status query parameter
-   * @param args.query.outcome query parameter
-   * @param args.query.occurred_from query parameter
-   * @param args.query.occurred_to query parameter
-   * @param args.query.received_from query parameter
-   * @param args.query.received_to query parameter
-   * @param args.query.after query parameter
-   * @param args.query.limit query parameter
+   * @param args.query.limit Number of records to return.
+   * @param args.query.after Opaque cursor returned by the previous response.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
    * const result = await client.events.listEvents();
@@ -38,9 +24,9 @@ export class EventsApi {
   }
 
   /**
-   * Get a canonical event
+   * Get an event
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
+   * @param args.path.event_id Event identifier.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
    * const result = await client.events.getEvent(params);
@@ -50,16 +36,17 @@ export class EventsApi {
   }
 
   /**
-   * Reveal an audited event field
+   * List issue evidence
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
-   * @param args.query.field query parameter
+   * @param args.path.issue_id Issue identifier.
+   * @param args.query.limit Number of records to return.
+   * @param args.query.after Opaque cursor returned by the previous response.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
-   * const result = await client.events.revealEventField(params);
+   * const result = await client.events.listIssueEvents(params);
    */
-  revealEventField(args: RequestParams<"reveal-event-field">): Promise<ResponseBody<"reveal-event-field">> {
-    return this.transport.request("reveal-event-field", args);
+  listIssueEvents(args: RequestParams<"list-issue-events">): Promise<ResponseBody<"list-issue-events">> {
+    return this.transport.request("list-issue-events", args);
   }
 
 

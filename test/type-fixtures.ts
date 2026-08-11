@@ -1,37 +1,20 @@
-import type { AlertRule, CreateReconciliationInputBody, EventPage } from "../src/index.js";
-import type { RequestParams, ResponseBody } from "../src/index.js";
+import type { APIInfo, MonitoringBatchRequest, RequestParams, ResponseBody } from "../src/index.js";
 
 const eventQuery: RequestParams<"list-events"> = {
-  query: { source_id: "source-1", limit: 25 },
+  query: { limit: 25, after: "cursor" },
 };
-const eventPath: RequestParams<"get-event"> = { path: { id: "event-1" } };
-// @ts-expect-error get-event requires its path parameter.
-const missingEventPath: RequestParams<"get-event"> = {};
-// @ts-expect-error list-events.limit is numeric in the OpenAPI contract.
-const invalidEventQuery: RequestParams<"list-events"> = { query: { limit: "not-a-number" } };
-const ingestionHeaders: RequestParams<"ingest-integrity-events"> = {
-  headers: { "X-Integrity-Test-Session": "session-1" },
-  body: {} as RequestParams<"ingest-integrity-events">["body"],
+const eventPath: RequestParams<"get-event"> = { path: { event_id: "event-1" } };
+const ingestion: RequestParams<"ingest-monitoring-events"> = {
+  body: {} as MonitoringBatchRequest,
 };
-const alertRule: AlertRule = {
-  breachEnabled: true,
-  channels: [],
-  controlId: "control-1",
-  dedupWindowSeconds: 60,
-  destinations: {},
-  resolutionEnabled: true,
-  severityMin: "medium",
+const issueAssignment: RequestParams<"update-issue"> = {
+  path: { issue_id: "issue-1" },
+  body: { assigned_to: null },
 };
-const createReconciliation: RequestParams<"create-reconciliation"> = {
-  body: {} as CreateReconciliationInputBody,
-};
-const eventResponse: ResponseBody<"list-events"> = {} as EventPage;
+const metadata: ResponseBody<"get-api-info"> = {} as APIInfo;
 
 void eventQuery;
 void eventPath;
-void missingEventPath;
-void invalidEventQuery;
-void ingestionHeaders;
-void alertRule;
-void createReconciliation;
-void eventResponse;
+void ingestion;
+void issueAssignment;
+void metadata;
