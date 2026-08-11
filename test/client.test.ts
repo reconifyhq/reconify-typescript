@@ -5,7 +5,7 @@ const response = (body: unknown, status = 200, headers: Record<string, string> =
   new Response(body === undefined ? undefined : JSON.stringify(body), { status, headers });
 
 describe("ReconifyClient", () => {
-  it("builds the v1 URL, encodes path values, serializes queries, and authenticates", async () => {
+  it("uses the v1 URL, encodes path values, serializes queries, and authenticates", async () => {
     let request: Request | undefined;
     const client = new ReconifyClient({
       apiKey: "rk_test",
@@ -16,71 +16,50 @@ describe("ReconifyClient", () => {
       },
     });
 
-    await client.events.getEvent({ path: { id: "event/with space" } });
+    await client.events.getEvent({ path: { event_id: "event/with space" } });
 
     expect(request?.url).toBe("https://api.example.test/v1/events/event%2Fwith%20space");
     expect(request?.method).toBe("GET");
     expect(request?.headers.get("authorization")).toBe("Bearer rk_test");
   });
 
-  it("serializes request bodies and query parameters", async () => {
+  it("supports environment defaults and serializes request bodies", async () => {
     let request: Request | undefined;
-    const client = new ReconifyClient({
-      apiKey: "rk_test",
-      baseUrl: "https://api.example.test/v1/",
-      fetch: async (input, init) => {
-        request = new Request(input, init);
-        return response({ ok: true });
-      },
-    });
+    const previousKey = process.env.RECONIFY_API_KEY;
+    const previousUrl = process.env.RECONIFY_API_URL;
+    process.env.RECONIFY_API_KEY = "rk_environment";
+    process.env.RECONIFY_API_URL = "https://api.example.test/v1/";
+    try {
+      const client = new ReconifyClient({
+        fetch: async (input, init) => {
+          request = new Request(input, init);
+          return response({ results: [] }, 202);
+        },
+      });
 
-    await client.events.listEvents({ query: { source_id: "source-1", limit: 10 } });
-    expect(request?.url).toBe("https://api.example.test/v1/events?source_id=source-1&limit=10");
-
-    await client.alerts.putAlertRule({
-      body: {
-        breachEnabled: true,
-        channels: [],
-        controlId: "control-1",
-        dedupWindowSeconds: 60,
-        destinations: {},
-        resolutionEnabled: true,
-        severityMin: "medium",
-      },
-    });
-    expect(request?.method).toBe("PUT");
-    expect(request?.headers.get("content-type")).toBe("application/json");
-    expect(await request?.json()).toEqual({
-      breachEnabled: true,
-      channels: [],
-      controlId: "control-1",
-      dedupWindowSeconds: 60,
-      destinations: {},
-      resolutionEnabled: true,
-      severityMin: "medium",
-    });
-  });
-
-  it("returns void for 204 responses", async () => {
-    const client = new ReconifyClient({
-      apiKey: "rk_test",
-      baseUrl: "https://api.example.test",
-      fetch: async () => new Response(undefined, { status: 204 }),
-    });
-
-    await expect(client.ledger.deleteLedgerSource({ path: { id: "source-1" } })).resolves.toBeUndefined();
+      await client.ingestion.ingestMonitoringEvents({ body: { events: [] } });
+      expect(request?.url).toBe("https://api.example.test/v1/events");
+      expect(request?.method).toBe("POST");
+      expect(request?.headers.get("content-type")).toBe("application/json");
+      expect(await request?.json()).toEqual({ events: [] });
+    } finally {
+      if (previousKey === undefined) delete process.env.RECONIFY_API_KEY;
+      else process.env.RECONIFY_API_KEY = previousKey;
+      if (previousUrl === undefined) delete process.env.RECONIFY_API_URL;
+      else process.env.RECONIFY_API_URL = previousUrl;
+    }
   });
 
   it("raises a typed error with the problem response body", async () => {
     const client = new ReconifyClient({
       apiKey: "rk_test",
       baseUrl: "https://api.example.test",
-      fetch: async () => response({ detail: "Not found" }, 404),
+      fetch: async () => response({ code: "not_found", message: "Not found" }, 404),
     });
 
-    const error = await client.events.getEvent({ path: { id: "missing" } }).catch((value) => value);
+    const error = await client.events.getEvent({ path: { event_id: "missing" } }).catch((value) => value);
     expect(error).toBeInstanceOf(ReconifyApiError);
-    expect(error).toMatchObject({ status: 404, code: "not_found", body: { detail: "Not found" }, message: "Not found" });
+    expect(error).toMatchObject({ status: 404, code: "not_found", body: { message: "Not found" }, message: "Not found" });
   });
 
   it("retries idempotent requests for 429 and 503 responses", async () => {
@@ -91,13 +70,13 @@ describe("ReconifyClient", () => {
       retry: { maxAttempts: 3, baseDelayMs: 0, maxDelayMs: 0 },
       fetch: async () => {
         attempts += 1;
-        if (attempts === 1) return response({ detail: "rate limited" }, 429);
-        if (attempts === 2) return response({ detail: "temporarily unavailable" }, 503);
+        if (attempts === 1) return response({ message: "rate limited" }, 429);
+        if (attempts === 2) return response({ message: "temporarily unavailable" }, 503);
         return response({ id: "event-1" });
       },
     });
 
-    await expect(client.events.getEvent({ path: { id: "event-1" } })).resolves.toEqual({ id: "event-1" });
+    await expect(client.events.getEvent({ path: { event_id: "event-1" } })).resolves.toEqual({ id: "event-1" });
     expect(attempts).toBe(3);
   });
 
@@ -111,7 +90,7 @@ describe("ReconifyClient", () => {
       }),
     });
 
-    await expect(client.events.getEvent({ path: { id: "event-1" }, request: { timeoutMs: 5 } })).rejects.toBeInstanceOf(ReconifyTimeoutError);
+    await expect(client.events.getEvent({ path: { event_id: "event-1" }, request: { timeoutMs: 5 } })).rejects.toBeInstanceOf(ReconifyTimeoutError);
   });
 
   it("iterates cursor-paginated events naturally", async () => {
@@ -123,7 +102,7 @@ describe("ReconifyClient", () => {
         const cursor = new URL(String(input)).searchParams.get("after");
         requestedCursors.push(cursor);
         return cursor === null
-          ? response({ events: [{ id: "event-1" }], limit: 1, nextCursor: "page-2" })
+          ? response({ events: [{ id: "event-1" }], limit: 1, next_cursor: "page-2" })
           : response({ events: [{ id: "event-2" }], limit: 1 });
       },
     });

@@ -63,8 +63,8 @@ export interface RequestOptions {
 }
 
 export interface ReconifyClientOptions {
-  apiKey: string;
-  baseUrl: string;
+  apiKey?: string;
+  baseUrl?: string;
   fetch?: FetchLike;
   headers?: HeadersInit;
   timeoutMs?: number;

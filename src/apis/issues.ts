@@ -11,23 +11,11 @@ export class IssuesApi {
   constructor(private readonly transport: ApiTransport) {}
 
   /**
-   * List integrity issues
+   * List issues
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.query.status query parameter
-   * @param args.query.severity query parameter
-   * @param args.query.reason query parameter
-   * @param args.query.system_outcome query parameter
-   * @param args.query.control_id query parameter
-   * @param args.query.assigned_to query parameter
-   * @param args.query.source_id query parameter
-   * @param args.query.currency query parameter
-   * @param args.query.exposure_min query parameter
-   * @param args.query.exposure_max query parameter
-   * @param args.query.q query parameter
-   * @param args.query.opened_from query parameter
-   * @param args.query.opened_to query parameter
-   * @param args.query.after query parameter
-   * @param args.query.limit query parameter
+   * @param args.query.status Filter by finding status.
+   * @param args.query.limit Number of records to return.
+   * @param args.query.after Opaque cursor returned by the previous response.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
    * const result = await client.issues.listIssues();
@@ -37,20 +25,9 @@ export class IssuesApi {
   }
 
   /**
-   * Summarize integrity issues
+   * Get an issue
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.request Optional cancellation, timeout, and retry controls.
-   * @example
-   * const result = await client.issues.getIssueSummary();
-   */
-  getIssueSummary(args?: RequestParams<"get-issue-summary">): Promise<ResponseBody<"get-issue-summary">> {
-    return this.transport.request("get-issue-summary", args);
-  }
-
-  /**
-   * Get an integrity issue
-   * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
+   * @param args.path.issue_id Issue identifier.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
    * const result = await client.issues.getIssue(params);
@@ -60,9 +37,9 @@ export class IssuesApi {
   }
 
   /**
-   * Update an integrity issue
+   * Assign an issue
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
+   * @param args.path.issue_id Issue identifier.
    * @param args.body JSON request body.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
@@ -73,34 +50,22 @@ export class IssuesApi {
   }
 
   /**
-   * List issue deliveries
+   * List issue notes
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
+   * @param args.path.issue_id Issue identifier.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
-   * const result = await client.issues.listIssueDeliveries(params);
+   * const result = await client.issues.listIssueNotes(params);
    */
-  listIssueDeliveries(args: RequestParams<"list-issue-deliveries">): Promise<ResponseBody<"list-issue-deliveries">> {
-    return this.transport.request("list-issue-deliveries", args);
-  }
-
-  /**
-   * Retry a failed issue delivery
-   * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
-   * @param args.path.deliveryId path parameter
-   * @param args.request Optional cancellation, timeout, and retry controls.
-   * @example
-   * const result = await client.issues.retryIssueDelivery(params);
-   */
-  retryIssueDelivery(args: RequestParams<"retry-issue-delivery">): Promise<ResponseBody<"retry-issue-delivery">> {
-    return this.transport.request("retry-issue-delivery", args);
+  listIssueNotes(args: RequestParams<"list-issue-notes">): Promise<ResponseBody<"list-issue-notes">> {
+    return this.transport.request("list-issue-notes", args);
   }
 
   /**
    * Add an issue note
    * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
+   * @param args.path.issue_id Issue identifier.
+   * @param args.headers.Idempotency-Key Optional key for safe retries. The same key must represent the same issue and note body.
    * @param args.body JSON request body.
    * @param args.request Optional cancellation, timeout, and retry controls.
    * @example
@@ -108,19 +73,6 @@ export class IssuesApi {
    */
   addIssueNote(args: RequestParams<"add-issue-note">): Promise<ResponseBody<"add-issue-note">> {
     return this.transport.request("add-issue-note", args);
-  }
-
-  /**
-   * Resolve an issue
-   * @param args Typed request parameters from the OpenAPI contract.
-   * @param args.path.id path parameter
-   * @param args.body JSON request body.
-   * @param args.request Optional cancellation, timeout, and retry controls.
-   * @example
-   * const result = await client.issues.resolveIssue(params);
-   */
-  resolveIssue(args: RequestParams<"resolve-issue">): Promise<ResponseBody<"resolve-issue">> {
-    return this.transport.request("resolve-issue", args);
   }
 
 

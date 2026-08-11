@@ -1,5 +1,5 @@
 export interface CursorPage {
-  nextCursor?: string;
+  next_cursor?: string;
 }
 
 export async function* iterateCursorPages<Item, Page extends CursorPage>(
@@ -10,7 +10,7 @@ export async function* iterateCursorPages<Item, Page extends CursorPage>(
   while (true) {
     const page = await fetchPage(after);
     for (const item of getItems(page) ?? []) yield item;
-    if (!page.nextCursor || page.nextCursor === after) return;
-    after = page.nextCursor;
+    if (!page.next_cursor || page.next_cursor === after) return;
+    after = page.next_cursor;
   }
 }
