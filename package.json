@@ -31,7 +31,10 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs",
+    "llms.txt",
+    "context7.json"
   ],
   "publishConfig": {
     "access": "public"
@@ -44,8 +47,9 @@
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check-context7": "node scripts/check-context7.mjs",
     "coverage": "tsx scripts/check-openapi-coverage.ts",
-    "verify": "npm run typecheck && npm run build && npm test",
+    "verify": "npm run check-context7 && npm run typecheck && npm run build && npm test",
     "verify:openapi": "npm run fetch-contract && npm run check-generated && npm run coverage",
     "sync-contract": "node scripts/fetch-contract.mjs --latest && npm run generate && npm run coverage",
     "prepublishOnly": "npm run verify",

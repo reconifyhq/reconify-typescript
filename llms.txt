@@ -1,0 +1,21 @@
+# Reconify TypeScript SDK
+
+> A typed TypeScript client for the Reconify Public API, published as @reconifyhq/sdk.
+
+The SDK targets the current 13-operation public contract: metadata, events,
+monitoring ingestion, issues, and organization/member reads. It provides
+cancellation, request timeouts, retries, structured API errors, cursor
+pagination, and generated OpenAPI types.
+
+## Documentation
+
+- [README](https://github.com/reconifyhq/reconify-typescript/blob/main/README.md): installation, modules, contract synchronization, and release workflow.
+- [Getting started](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/getting-started.md): configure a client and submit the first monitoring batch.
+- [Request options](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/request-options.md): typed arguments, cancellation, timeouts, retries, pagination, and errors.
+- [Workflows](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/workflows.md): ingestion, event, issue, organization, and contract-sync examples.
+- [API reference](https://github.com/reconifyhq/reconify-typescript/blob/main/docs/api-reference.md): every supported public operation and example.
+
+## Source
+
+- [Client implementation](https://github.com/reconifyhq/reconify-typescript/blob/main/src/client.ts): the client facade and public module composition.
+- [Transport implementation](https://github.com/reconifyhq/reconify-typescript/blob/main/src/core/transport.ts): URL construction, authentication, retries, timeouts, and error parsing.
