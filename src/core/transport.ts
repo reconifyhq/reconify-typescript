@@ -86,7 +86,7 @@ const isJsonResponse = (response: Response): boolean => response.headers.get("co
 
 const normalizeBaseUrl = (baseUrl: string): string => {
   const normalized = baseUrl.replace(/\/+$/, "");
-  return normalized.endsWith("/v1") ? normalized.slice(0, -3) : normalized;
+  return normalized.endsWith("/v2") ? normalized.slice(0, -3) : normalized;
 };
 
 const pathWithParams = (template: string, path: Record<string, unknown> | undefined): string =>

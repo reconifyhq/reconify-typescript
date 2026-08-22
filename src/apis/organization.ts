@@ -13,8 +13,8 @@ export class OrganizationApi {
    * @example
    * const result = await client.organization.getOrganization();
    */
-  getOrganization(args?: RequestParams<"get-organization">): Promise<ResponseBody<"get-organization">> {
-    return this.transport.request("get-organization", args);
+  getOrganization(args?: RequestParams<"organization_get">): Promise<ResponseBody<"organization_get">> {
+    return this.transport.request("organization_get", args);
   }
 
   /**
@@ -24,8 +24,8 @@ export class OrganizationApi {
    * @example
    * const result = await client.organization.listOrganizationMembers();
    */
-  listOrganizationMembers(args?: RequestParams<"list-organization-members">): Promise<ResponseBody<"list-organization-members">> {
-    return this.transport.request("list-organization-members", args);
+  listOrganizationMembers(args?: RequestParams<"organization_list_members">): Promise<ResponseBody<"organization_list_members">> {
+    return this.transport.request("organization_list_members", args);
   }
 
 }

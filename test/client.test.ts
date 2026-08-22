@@ -5,7 +5,7 @@ const response = (body: unknown, status = 200, headers: Record<string, string> =
   new Response(body === undefined ? undefined : JSON.stringify(body), { status, headers });
 
 describe("ReconifyClient", () => {
-  it("uses the v1 URL, encodes path values, serializes queries, and authenticates", async () => {
+  it("uses the v2 URL, encodes path values, serializes queries, and authenticates", async () => {
     let request: Request | undefined;
     const client = new ReconifyClient({
       apiKey: "rk_test",
@@ -18,7 +18,7 @@ describe("ReconifyClient", () => {
 
     await client.events.getEvent({ path: { event_id: "event/with space" } });
 
-    expect(request?.url).toBe("https://api.example.test/v1/events/event%2Fwith%20space");
+    expect(request?.url).toBe("https://api.example.test/v2/events/event%2Fwith%20space");
     expect(request?.method).toBe("GET");
     expect(request?.headers.get("authorization")).toBe("Bearer rk_test");
   });
@@ -28,7 +28,7 @@ describe("ReconifyClient", () => {
     const previousKey = process.env.RECONIFY_API_KEY;
     const previousUrl = process.env.RECONIFY_API_URL;
     process.env.RECONIFY_API_KEY = "rk_environment";
-    process.env.RECONIFY_API_URL = "https://api.example.test/v1/";
+    process.env.RECONIFY_API_URL = "https://api.example.test/v2/";
     try {
       const client = new ReconifyClient({
         fetch: async (input, init) => {
@@ -38,7 +38,7 @@ describe("ReconifyClient", () => {
       });
 
       await client.ingestion.ingestMonitoringEvents({ body: { events: [] } });
-      expect(request?.url).toBe("https://api.example.test/v1/events");
+      expect(request?.url).toBe("https://api.example.test/v2/events");
       expect(request?.method).toBe("POST");
       expect(request?.headers.get("content-type")).toBe("application/json");
       expect(await request?.json()).toEqual({ events: [] });

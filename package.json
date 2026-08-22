@@ -1,6 +1,6 @@
 {
   "name": "@reconifyhq/sdk",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
   "license": "MIT",
   "repository": {
@@ -8,7 +8,13 @@
     "url": "https://github.com/reconifyhq/reconify-typescript.git"
   },
   "homepage": "https://github.com/reconifyhq/reconify-typescript#readme",
-  "keywords": ["reconify", "sdk", "typescript", "integrity", "reconciliation"],
+  "keywords": [
+    "reconify",
+    "sdk",
+    "typescript",
+    "integrity",
+    "reconciliation"
+  ],
   "type": "module",
   "sideEffects": false,
   "engines": {
@@ -22,7 +28,14 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE", "docs", "llms.txt", "context7.json"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs",
+    "llms.txt",
+    "context7.json"
+  ],
   "publishConfig": {
     "access": "public"
   },

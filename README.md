@@ -1,6 +1,6 @@
 # @reconifyhq/sdk
 
-Typed TypeScript client for the public Reconify v1 API.
+Typed TypeScript client for the public Reconify v2 API.
 
 ## Quickstart
 
@@ -16,8 +16,8 @@ const events = await client.events.listEvents({ query: { limit: 25 } });
 ```
 
 The API key and URL can also come from `RECONIFY_API_KEY` and
-`RECONIFY_API_URL`. The default URL is `https://api.reconifyhq.com/v1`; a base
-URL ending in `/v1` is also accepted. The SDK never accepts internal
+`RECONIFY_API_URL`. The default URL is `https://api.reconifyhq.com/v2`; a base
+URL ending in `/v2` is also accepted. The SDK never accepts internal
 `/business/v1` routes.
 
 ## Public modules
@@ -33,8 +33,8 @@ The current public contract contains exactly 13 operations:
 | `client.organization` | Get organization and list members |
 
 All operation parameters and response types are derived from the versioned
-OpenAPI contract. Legacy ledger, wallet, setup, search, alert, and
-reconciliation APIs were removed in `1.0.0` without compatibility aliases; see
+OpenAPI contract. The v2 release renames generated operation IDs and
+machine-friendly tags while keeping resource behavior unchanged; see
 [UPGRADING.md](UPGRADING.md).
 
 ## Requests and resilience

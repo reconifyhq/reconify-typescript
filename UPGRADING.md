@@ -1,8 +1,8 @@
-# Upgrading to 1.0.0
+# Upgrading to 2.0.0
 
-The 1.0.0 client is rebuilt against the current public Reconify v1 contract.
-It removes methods that described private or retired ledger, wallet, setup,
-search, alert, and reconciliation routes.
+The 2.0.0 client targets the public Reconify v2 contract at `/v2`.
+Generated operation IDs now use stable `resource_action` identifiers and tags
+use lowercase hyphenated names.
 
 Use the following modules for the supported surface:
 
@@ -13,5 +13,5 @@ Use the following modules for the supported surface:
 - organization: organization and member reads
 
 The public API uses snake_case wire fields and event_id or issue_id path
-parameters exactly as described by OpenAPI. Regenerate from the pinned public
-contract when upgrading the API version.
+parameters exactly as described by OpenAPI. Existing v1 clients can continue
+using `/v1`; v2 clients must use the v2 artifact and endpoint.
