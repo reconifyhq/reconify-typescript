@@ -3,7 +3,7 @@ import type { RequestParams, ResponseBody } from "../core/types.js";
 import { iterateCursorPages } from "../core/pagination.js";
 import type { Event } from "../models.js";
 
-type ListEventsParams = RequestParams<"list-events">;
+type ListEventsParams = RequestParams<"events_list">;
 export type IterateEventsOptions = Omit<ListEventsParams, "query"> & { query?: Omit<NonNullable<ListEventsParams["query"]>, "after"> };
 
 
@@ -19,8 +19,8 @@ export class EventsApi {
    * @example
    * const result = await client.events.listEvents();
    */
-  listEvents(args?: RequestParams<"list-events">): Promise<ResponseBody<"list-events">> {
-    return this.transport.request("list-events", args);
+  listEvents(args?: RequestParams<"events_list">): Promise<ResponseBody<"events_list">> {
+    return this.transport.request("events_list", args);
   }
 
   /**
@@ -31,8 +31,8 @@ export class EventsApi {
    * @example
    * const result = await client.events.getEvent(params);
    */
-  getEvent(args: RequestParams<"get-event">): Promise<ResponseBody<"get-event">> {
-    return this.transport.request("get-event", args);
+  getEvent(args: RequestParams<"events_get">): Promise<ResponseBody<"events_get">> {
+    return this.transport.request("events_get", args);
   }
 
   /**
@@ -45,15 +45,15 @@ export class EventsApi {
    * @example
    * const result = await client.events.listIssueEvents(params);
    */
-  listIssueEvents(args: RequestParams<"list-issue-events">): Promise<ResponseBody<"list-issue-events">> {
-    return this.transport.request("list-issue-events", args);
+  listIssueEvents(args: RequestParams<"issues_list_events">): Promise<ResponseBody<"issues_list_events">> {
+    return this.transport.request("issues_list_events", args);
   }
 
 
   /** Iterate through every event page using the API cursor. */
   async *iterateEvents(args?: IterateEventsOptions): AsyncGenerator<Event> {
     const query = args?.query;
-    yield* iterateCursorPages<Event, ResponseBody<"list-events">>(
+    yield* iterateCursorPages<Event, ResponseBody<"events_list">>(
       (after) => this.listEvents({ ...args, query: { ...query, ...(after ? { after } : {}) } }),
       (page) => page.events,
     );

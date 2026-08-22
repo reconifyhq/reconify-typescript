@@ -3,7 +3,7 @@ import type { RequestParams, ResponseBody } from "../core/types.js";
 import { iterateCursorPages } from "../core/pagination.js";
 import type { Issue } from "../models.js";
 
-type ListIssuesParams = RequestParams<"list-issues">;
+type ListIssuesParams = RequestParams<"issues_list">;
 export type IterateIssuesOptions = Omit<ListIssuesParams, "query"> & { query?: Omit<NonNullable<ListIssuesParams["query"]>, "after"> };
 
 
@@ -20,8 +20,8 @@ export class IssuesApi {
    * @example
    * const result = await client.issues.listIssues();
    */
-  listIssues(args?: RequestParams<"list-issues">): Promise<ResponseBody<"list-issues">> {
-    return this.transport.request("list-issues", args);
+  listIssues(args?: RequestParams<"issues_list">): Promise<ResponseBody<"issues_list">> {
+    return this.transport.request("issues_list", args);
   }
 
   /**
@@ -32,8 +32,8 @@ export class IssuesApi {
    * @example
    * const result = await client.issues.getIssue(params);
    */
-  getIssue(args: RequestParams<"get-issue">): Promise<ResponseBody<"get-issue">> {
-    return this.transport.request("get-issue", args);
+  getIssue(args: RequestParams<"issues_get">): Promise<ResponseBody<"issues_get">> {
+    return this.transport.request("issues_get", args);
   }
 
   /**
@@ -45,8 +45,8 @@ export class IssuesApi {
    * @example
    * const result = await client.issues.updateIssue(params);
    */
-  updateIssue(args: RequestParams<"update-issue">): Promise<ResponseBody<"update-issue">> {
-    return this.transport.request("update-issue", args);
+  updateIssue(args: RequestParams<"issues_assign">): Promise<ResponseBody<"issues_assign">> {
+    return this.transport.request("issues_assign", args);
   }
 
   /**
@@ -57,8 +57,8 @@ export class IssuesApi {
    * @example
    * const result = await client.issues.listIssueNotes(params);
    */
-  listIssueNotes(args: RequestParams<"list-issue-notes">): Promise<ResponseBody<"list-issue-notes">> {
-    return this.transport.request("list-issue-notes", args);
+  listIssueNotes(args: RequestParams<"issues_list_notes">): Promise<ResponseBody<"issues_list_notes">> {
+    return this.transport.request("issues_list_notes", args);
   }
 
   /**
@@ -71,15 +71,15 @@ export class IssuesApi {
    * @example
    * const result = await client.issues.addIssueNote(params);
    */
-  addIssueNote(args: RequestParams<"add-issue-note">): Promise<ResponseBody<"add-issue-note">> {
-    return this.transport.request("add-issue-note", args);
+  addIssueNote(args: RequestParams<"issues_add_note">): Promise<ResponseBody<"issues_add_note">> {
+    return this.transport.request("issues_add_note", args);
   }
 
 
   /** Iterate through every issue page using the API cursor. */
   async *iterateIssues(args?: IterateIssuesOptions): AsyncGenerator<Issue> {
     const query = args?.query;
-    yield* iterateCursorPages<Issue, ResponseBody<"list-issues">>(
+    yield* iterateCursorPages<Issue, ResponseBody<"issues_list">>(
       (after) => this.listIssues({ ...args, query: { ...query, ...(after ? { after } : {}) } }),
       (page) => page.issues,
     );

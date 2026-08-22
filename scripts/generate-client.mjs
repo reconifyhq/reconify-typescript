@@ -8,13 +8,28 @@ if (!specPath) {
 const spec = JSON.parse(fs.readFileSync(specPath, "utf8"));
 const httpMethods = new Set(["get", "post", "put", "patch", "delete"]);
 const moduleNames = {
-  "API Metadata": ["metadata", "MetadataApi"],
-  "Event Reads": ["events", "EventsApi"],
-  "Event Ingestion API": ["ingestion", "IngestionApi"],
-  "Issue Operations": ["issues", "IssuesApi"],
-  Organization: ["organization", "OrganizationApi"],
+  "api-metadata": ["metadata", "MetadataApi"],
+  "event-reads": ["events", "EventsApi"],
+  "event-ingestion": ["ingestion", "IngestionApi"],
+  "issue-operations": ["issues", "IssuesApi"],
+  organization: ["organization", "OrganizationApi"],
 };
-const camelCase = (value) => value.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+const camelCase = (value) => value.replace(/[-_]([a-z])/g, (_, letter) => letter.toUpperCase());
+const methodNames = {
+  api_info_get: "getApiInfo",
+  health_get: "getHealth",
+  events_list: "listEvents",
+  events_ingest: "ingestMonitoringEvents",
+  events_get: "getEvent",
+  issues_list: "listIssues",
+  issues_get: "getIssue",
+  issues_assign: "updateIssue",
+  issues_list_events: "listIssueEvents",
+  issues_list_notes: "listIssueNotes",
+  issues_add_note: "addIssueNote",
+  organization_get: "getOrganization",
+  organization_list_members: "listOrganizationMembers",
+};
 const operations = [];
 
 for (const [path, pathItem] of Object.entries(spec.paths)) {
@@ -28,7 +43,7 @@ for (const [path, pathItem] of Object.entries(spec.paths)) {
       method: method.toUpperCase(),
       path,
       operationId: operation.operationId,
-      methodName: camelCase(operation.operationId),
+      methodName: methodNames[operation.operationId] ?? camelCase(operation.operationId),
       tag,
       module,
       className,
@@ -90,7 +105,7 @@ const paginationByModule = {
       'import type { Event } from "../models.js";',
     ].join("\n"),
     types: [
-      'type ListEventsParams = RequestParams<"list-events">;',
+      'type ListEventsParams = RequestParams<"events_list">;',
       'export type IterateEventsOptions = Omit<ListEventsParams, "query"> & { query?: Omit<NonNullable<ListEventsParams["query"]>, "after"> };',
     ].join("\n"),
     methods: [
@@ -98,7 +113,7 @@ const paginationByModule = {
       '  /** Iterate through every event page using the API cursor. */',
       '  async *iterateEvents(args?: IterateEventsOptions): AsyncGenerator<Event> {',
       '    const query = args?.query;',
-      '    yield* iterateCursorPages<Event, ResponseBody<"list-events">>(',
+      '    yield* iterateCursorPages<Event, ResponseBody<"events_list">>(',
       '      (after) => this.listEvents({ ...args, query: { ...query, ...(after ? { after } : {}) } }),',
       '      (page) => page.events,',
       '    );',
@@ -111,7 +126,7 @@ const paginationByModule = {
       'import type { Issue } from "../models.js";',
     ].join("\n"),
     types: [
-      'type ListIssuesParams = RequestParams<"list-issues">;',
+      'type ListIssuesParams = RequestParams<"issues_list">;',
       'export type IterateIssuesOptions = Omit<ListIssuesParams, "query"> & { query?: Omit<NonNullable<ListIssuesParams["query"]>, "after"> };',
     ].join("\n"),
     methods: [
@@ -119,7 +134,7 @@ const paginationByModule = {
       '  /** Iterate through every issue page using the API cursor. */',
       '  async *iterateIssues(args?: IterateIssuesOptions): AsyncGenerator<Issue> {',
       '    const query = args?.query;',
-      '    yield* iterateCursorPages<Issue, ResponseBody<"list-issues">>(',
+      '    yield* iterateCursorPages<Issue, ResponseBody<"issues_list">>(',
       '      (after) => this.listIssues({ ...args, query: { ...query, ...(after ? { after } : {}) } }),',
       '      (page) => page.issues,',
       '    );',

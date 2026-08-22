@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/v1": {
+    "/v2": {
         parameters: {
             query?: never;
             header?: never;
@@ -15,7 +15,7 @@ export interface paths {
          * Get API information
          * @description Returns public API metadata without authentication.
          */
-        get: operations["get-api-info"];
+        get: operations["api_info_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -24,7 +24,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/events": {
+    "/v2/events": {
         parameters: {
             query?: never;
             header?: never;
@@ -35,20 +35,20 @@ export interface paths {
          * List events
          * @description Lists received monitoring events for the organization.
          */
-        get: operations["list-events"];
+        get: operations["events_list"];
         put?: never;
         /**
          * Submit monitoring events
          * @description Durably acknowledge a batch of 1–500 flow-monitoring events. Each event is validated independently; accepted and rejected indexes are returned together.
          */
-        post: operations["ingest-monitoring-events"];
+        post: operations["events_ingest"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/events/{event_id}": {
+    "/v2/events/{event_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -59,7 +59,7 @@ export interface paths {
          * Get an event
          * @description Returns one monitoring event by its event ID.
          */
-        get: operations["get-event"];
+        get: operations["events_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -68,7 +68,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/health": {
+    "/v2/health": {
         parameters: {
             query?: never;
             header?: never;
@@ -79,7 +79,7 @@ export interface paths {
          * Get public health status
          * @description Returns a minimal public availability signal without exposing infrastructure details.
          */
-        get: operations["get-health"];
+        get: operations["health_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -88,7 +88,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/issues": {
+    "/v2/issues": {
         parameters: {
             query?: never;
             header?: never;
@@ -99,7 +99,7 @@ export interface paths {
          * List issues
          * @description Lists evidence-backed monitoring issues for the organization.
          */
-        get: operations["list-issues"];
+        get: operations["issues_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -108,7 +108,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/issues/{issue_id}": {
+    "/v2/issues/{issue_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -119,7 +119,7 @@ export interface paths {
          * Get an issue
          * @description Returns one monitoring issue by ID.
          */
-        get: operations["get-issue"];
+        get: operations["issues_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -129,10 +129,10 @@ export interface paths {
          * Assign an issue
          * @description Assigns an issue to an organization member or unassigns it with null.
          */
-        patch: operations["update-issue"];
+        patch: operations["issues_assign"];
         trace?: never;
     };
-    "/v1/issues/{issue_id}/events": {
+    "/v2/issues/{issue_id}/events": {
         parameters: {
             query?: never;
             header?: never;
@@ -143,7 +143,7 @@ export interface paths {
          * List issue evidence
          * @description Lists events linked to an issue through its monitored operation.
          */
-        get: operations["list-issue-events"];
+        get: operations["issues_list_events"];
         put?: never;
         post?: never;
         delete?: never;
@@ -152,7 +152,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/issues/{issue_id}/notes": {
+    "/v2/issues/{issue_id}/notes": {
         parameters: {
             query?: never;
             header?: never;
@@ -163,20 +163,20 @@ export interface paths {
          * List issue notes
          * @description Lists append-only investigation notes for an issue.
          */
-        get: operations["list-issue-notes"];
+        get: operations["issues_list_notes"];
         put?: never;
         /**
          * Add an issue note
          * @description Adds an append-only investigation note to an issue. Repeat a request with the same Idempotency-Key to replay the original note.
          */
-        post: operations["add-issue-note"];
+        post: operations["issues_add_note"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/organization": {
+    "/v2/organization": {
         parameters: {
             query?: never;
             header?: never;
@@ -187,7 +187,7 @@ export interface paths {
          * Get organization
          * @description Returns the organization associated with the credential.
          */
-        get: operations["get-organization"];
+        get: operations["organization_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -196,7 +196,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/organization/members": {
+    "/v2/organization/members": {
         parameters: {
             query?: never;
             header?: never;
@@ -207,7 +207,7 @@ export interface paths {
          * List organization members
          * @description Lists member IDs and roles who can be assigned to issues. Email addresses are not returned.
          */
-        get: operations["list-organization-members"];
+        get: operations["organization_list_members"];
         put?: never;
         post?: never;
         delete?: never;
@@ -235,12 +235,15 @@ export interface components {
             body: string;
         };
         Error: {
-            /** @description Stable machine-readable error code. */
-            code?: string;
+            /**
+             * @description Stable machine-readable error code.
+             * @enum {string}
+             */
+            code: "malformed_request" | "unauthorized" | "forbidden" | "request_too_large" | "invalid_input" | "not_found" | "idempotency_conflict" | "database_unavailable";
             /** @description Human-readable details about the request failure. */
             detail?: string;
             /** @description Short human-readable explanation. */
-            message?: string;
+            message: string;
             /** @description HTTP status code for the problem. */
             status?: number;
             /** @description General category of the problem. */
@@ -304,7 +307,7 @@ export interface components {
              * @description Deterministic reason the finding was raised.
              * @enum {string}
              */
-            category: "business_failure" | "missing_event" | "mismatch" | "duplicate_or_conflict";
+            category: "business_failure" | "missing_event" | "mismatch" | "duplicate_or_conflict" | "data_quality";
             /** @description Stable issue identifier. */
             id: string;
             /** @description Evidence-backed explanation of the issue. */
@@ -382,6 +385,8 @@ export interface components {
         MonitoringEvent: {
             /** @description Decimal amount in the event currency. */
             amount?: string;
+            /** @description Optional producer-supplied opaque identifier propagated across services. Do not include secrets or personal data. */
+            correlation_id?: string;
             /** @description Three-letter uppercase ISO currency code. */
             currency?: string;
             /** @description Optional provider, failure, or retry context. */
@@ -404,7 +409,7 @@ export interface components {
              * @description Time when the event occurred in the source system.
              */
             occurred_at?: string;
-            /** @description Stable business reference used to correlate the operation. */
+            /** @description Stable local business reference supplied by the producer. */
             reference: string;
             /**
              * @description Lifecycle event type, such as payment.succeeded.
@@ -502,7 +507,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    "get-api-info": {
+    api_info_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -517,20 +522,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "documentation_url": "https://docs.reconifyhq.com",
-                     *       "name": "Reconify API",
-                     *       "status_url": "https://status.reconifyhq.com",
-                     *       "version": "v1"
-                     *     }
-                     */
                     "application/json": components["schemas"]["APIInfo"];
                 };
             };
         };
     };
-    "list-events": {
+    events_list: {
         parameters: {
             query?: {
                 /** @description Number of records to return. */
@@ -550,24 +547,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "events": [
-                     *         {
-                     *           "amount": "150.00",
-                     *           "currency": "USD",
-                     *           "event_type": "payment.succeeded",
-                     *           "flow": "payment_to_wallet",
-                     *           "id": "evt_01J3Y0M8VJQ5W1R3E4J4K7N8P9",
-                     *           "occurred_at": "2026-01-01T00:00:00Z",
-                     *           "received_at": "2026-01-01T00:00:01Z",
-                     *           "reference": "order-123",
-                     *           "status": "processed"
-                     *         }
-                     *       ],
-                     *       "limit": 50
-                     *     }
-                     */
                     "application/json": components["schemas"]["ListEventsResponse"];
                 };
             };
@@ -577,12 +556,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -592,12 +565,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -607,12 +574,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -622,12 +583,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -637,18 +592,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "ingest-monitoring-events": {
+    events_ingest: {
         parameters: {
             query?: never;
             header?: never;
@@ -657,26 +606,6 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "events": [
-                 *         {
-                 *           "amount": "150.00",
-                 *           "currency": "USD",
-                 *           "data": {
-                 *             "provider": "stripe",
-                 *             "provider_reference": "pi_123"
-                 *           },
-                 *           "entity_id": "wallet_123",
-                 *           "flow": "payment_to_wallet",
-                 *           "id": "evt_01J3Y0M8VJQ5W1R3E4J4K7N8P9",
-                 *           "occurred_at": "2026-01-01T00:00:00Z",
-                 *           "reference": "order-123",
-                 *           "type": "payment.succeeded"
-                 *         }
-                 *       ]
-                 *     }
-                 */
                 "application/json": components["schemas"]["MonitoringBatchRequest"];
             };
         };
@@ -687,17 +616,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "results": [
-                     *         {
-                     *           "event_id": "evt_01J3Y0M8VJQ5W1R3E4J4K7N8P9",
-                     *           "index": 0,
-                     *           "status": "accepted"
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": components["schemas"]["MonitoringBatchResponse"];
                 };
             };
@@ -707,12 +625,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "malformed_request",
-                     *       "message": "request body must contain an events array"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -722,12 +634,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -737,12 +643,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "wallet integrity monitoring is not enabled"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -752,12 +652,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "request_too_large",
-                     *       "message": "request exceeds the 5 MiB limit"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -767,19 +661,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "results": [
-                     *         {
-                     *           "code": "invalid_event",
-                     *           "field": "amount",
-                     *           "index": 0,
-                     *           "message": "amount is required for this event type",
-                     *           "status": "rejected"
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": components["schemas"]["MonitoringBatchResponse"];
                 };
             };
@@ -789,18 +670,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "monitoring ingestion is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "get-event": {
+    events_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -818,19 +693,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "amount": "150.00",
-                     *       "currency": "USD",
-                     *       "event_type": "payment.succeeded",
-                     *       "flow": "payment_to_wallet",
-                     *       "id": "evt_01J3Y0M8VJQ5W1R3E4J4K7N8P9",
-                     *       "occurred_at": "2026-01-01T00:00:00Z",
-                     *       "received_at": "2026-01-01T00:00:01Z",
-                     *       "reference": "order-123",
-                     *       "status": "processed"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Event"];
                 };
             };
@@ -840,12 +702,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -855,12 +711,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -870,12 +720,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -885,12 +729,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -900,18 +738,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "get-health": {
+    health_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -926,17 +758,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "status": "operational"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Health"];
                 };
             };
         };
     };
-    "list-issues": {
+    issues_list: {
         parameters: {
             query?: {
                 /** @description Filter by finding status. */
@@ -958,21 +785,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "issues": [
-                     *         {
-                     *           "category": "missing_event",
-                     *           "id": "00000000-0000-7000-8000-000000000001",
-                     *           "message": "Payment flow is missing wallet credit evidence",
-                     *           "opened_at": "2026-01-01T00:00:00Z",
-                     *           "severity": "medium",
-                     *           "status": "open"
-                     *         }
-                     *       ],
-                     *       "limit": 50
-                     *     }
-                     */
                     "application/json": components["schemas"]["ListIssuesResponse"];
                 };
             };
@@ -982,12 +794,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -997,12 +803,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1012,12 +812,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1027,12 +821,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1042,18 +830,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "get-issue": {
+    issues_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1071,16 +853,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "category": "missing_event",
-                     *       "id": "00000000-0000-7000-8000-000000000001",
-                     *       "message": "Payment flow is missing wallet credit evidence",
-                     *       "opened_at": "2026-01-01T00:00:00Z",
-                     *       "severity": "medium",
-                     *       "status": "open"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Issue"];
                 };
             };
@@ -1090,12 +862,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1105,12 +871,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1120,12 +880,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1135,12 +889,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1150,18 +898,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "update-issue": {
+    issues_assign: {
         parameters: {
             query?: never;
             header?: never;
@@ -1173,11 +915,6 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "assigned_to": "00000000-0000-7000-8000-000000000002"
-                 *     }
-                 */
                 "application/json": components["schemas"]["PatchIssueRequest"];
             };
         };
@@ -1188,16 +925,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "category": "missing_event",
-                     *       "id": "00000000-0000-7000-8000-000000000001",
-                     *       "message": "Payment flow is missing wallet credit evidence",
-                     *       "opened_at": "2026-01-01T00:00:00Z",
-                     *       "severity": "medium",
-                     *       "status": "open"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Issue"];
                 };
             };
@@ -1207,12 +934,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1222,12 +943,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1237,12 +952,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1252,12 +961,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1267,18 +970,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "list-issue-events": {
+    issues_list_events: {
         parameters: {
             query?: {
                 /** @description Number of records to return. */
@@ -1301,24 +998,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "events": [
-                     *         {
-                     *           "amount": "150.00",
-                     *           "currency": "USD",
-                     *           "event_type": "payment.succeeded",
-                     *           "flow": "payment_to_wallet",
-                     *           "id": "evt_01J3Y0M8VJQ5W1R3E4J4K7N8P9",
-                     *           "occurred_at": "2026-01-01T00:00:00Z",
-                     *           "received_at": "2026-01-01T00:00:01Z",
-                     *           "reference": "order-123",
-                     *           "status": "processed"
-                     *         }
-                     *       ],
-                     *       "limit": 50
-                     *     }
-                     */
                     "application/json": components["schemas"]["ListEventsResponse"];
                 };
             };
@@ -1328,12 +1007,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1343,12 +1016,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1358,12 +1025,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1373,12 +1034,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1388,18 +1043,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "list-issue-notes": {
+    issues_list_notes: {
         parameters: {
             query?: never;
             header?: never;
@@ -1417,17 +1066,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "notes": [
-                     *         {
-                     *           "body": "Confirmed that the provider callback arrived late.",
-                     *           "created_at": "2026-01-01T12:00:00Z",
-                     *           "id": "00000000-0000-7000-8000-000000000003"
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": components["schemas"]["ListNotesResponse"];
                 };
             };
@@ -1437,12 +1075,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1452,12 +1084,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1467,12 +1093,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1482,12 +1102,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1497,18 +1111,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "add-issue-note": {
+    issues_add_note: {
         parameters: {
             query?: never;
             header?: {
@@ -1523,11 +1131,6 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "body": "Confirmed that the provider callback arrived late."
-                 *     }
-                 */
                 "application/json": components["schemas"]["AddNoteRequest"];
             };
         };
@@ -1538,13 +1141,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "body": "Confirmed that the provider callback arrived late.",
-                     *       "created_at": "2026-01-01T12:00:00Z",
-                     *       "id": "00000000-0000-7000-8000-000000000003"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Note"];
                 };
             };
@@ -1554,12 +1150,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1569,12 +1159,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1584,12 +1168,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1599,12 +1177,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1614,12 +1186,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "idempotency_conflict",
-                     *       "message": "Idempotency-Key was already used for a different request"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1629,18 +1195,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "get-organization": {
+    organization_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1655,14 +1215,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "created_at": "2026-01-01T00:00:00Z",
-                     *       "id": "00000000-0000-7000-8000-000000000004",
-                     *       "name": "Acme Payments",
-                     *       "slug": "acme-payments"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Organization"];
                 };
             };
@@ -1672,12 +1224,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1687,12 +1233,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1702,12 +1242,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1717,12 +1251,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1732,18 +1260,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
         };
     };
-    "list-organization-members": {
+    organization_list_members: {
         parameters: {
             query?: never;
             header?: never;
@@ -1758,17 +1280,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "members": [
-                     *         {
-                     *           "id": "00000000-0000-7000-8000-000000000002",
-                     *           "joined_at": "2026-01-01T00:00:00Z",
-                     *           "role": "analyst"
-                     *         }
-                     *       ]
-                     *     }
-                     */
                     "application/json": components["schemas"]["ListMembersResponse"];
                 };
             };
@@ -1778,12 +1289,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "invalid_input",
-                     *       "message": "request is invalid"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1793,12 +1298,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "unauthorized",
-                     *       "message": "authentication required"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1808,12 +1307,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "forbidden",
-                     *       "message": "credential cannot access this organization"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1823,12 +1316,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "not_found",
-                     *       "message": "resource not found"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -1838,12 +1325,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "code": "database_unavailable",
-                     *       "message": "public API data is unavailable"
-                     *     }
-                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };

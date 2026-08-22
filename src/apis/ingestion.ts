@@ -14,8 +14,8 @@ export class IngestionApi {
    * @example
    * const result = await client.ingestion.ingestMonitoringEvents(params);
    */
-  ingestMonitoringEvents(args: RequestParams<"ingest-monitoring-events">): Promise<ResponseBody<"ingest-monitoring-events">> {
-    return this.transport.request("ingest-monitoring-events", args);
+  ingestMonitoringEvents(args: RequestParams<"events_ingest">): Promise<ResponseBody<"events_ingest">> {
+    return this.transport.request("events_ingest", args);
   }
 
 }

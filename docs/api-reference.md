@@ -26,7 +26,7 @@ exposes exactly 13 operations from the public /v1 OpenAPI contract.
 
     import type { RequestParams } from "@reconifyhq/sdk";
 
-    const batch: RequestParams<"ingest-monitoring-events">["body"] = {
+    const batch: RequestParams<"events_ingest">["body"] = {
       events: [
         {
           flow: "payment_to_wallet",

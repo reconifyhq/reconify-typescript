@@ -1,7 +1,7 @@
 # Reconify TypeScript SDK agent guide
 
 This repository publishes @reconifyhq/sdk, a typed client for the public
-Reconify /v1 API.
+Reconify /v2 API.
 
 ## Contract authority
 

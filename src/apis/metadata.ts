@@ -13,8 +13,8 @@ export class MetadataApi {
    * @example
    * const result = await client.metadata.getApiInfo();
    */
-  getApiInfo(args?: RequestParams<"get-api-info">): Promise<ResponseBody<"get-api-info">> {
-    return this.transport.request("get-api-info", args);
+  getApiInfo(args?: RequestParams<"api_info_get">): Promise<ResponseBody<"api_info_get">> {
+    return this.transport.request("api_info_get", args);
   }
 
   /**
@@ -24,8 +24,8 @@ export class MetadataApi {
    * @example
    * const result = await client.metadata.getHealth();
    */
-  getHealth(args?: RequestParams<"get-health">): Promise<ResponseBody<"get-health">> {
-    return this.transport.request("get-health", args);
+  getHealth(args?: RequestParams<"health_get">): Promise<ResponseBody<"health_get">> {
+    return this.transport.request("health_get", args);
   }
 
 }
