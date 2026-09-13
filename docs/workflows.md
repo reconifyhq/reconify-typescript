@@ -24,6 +24,20 @@ All examples assume a configured ReconifyClient.
 Keep event identifiers stable when retrying the same ingestion batch. Inspect
 per-event results for accepted, duplicate, and rejected outcomes.
 
+Register an on-chain evidence source with an idempotency key when an accepted
+event needs bounded blockchain enrichment:
+
+    await client.ingestion.registerOnchainSource({
+      headers: { "Idempotency-Key": "source-order-123" },
+      body: {
+        flow: "payment_to_wallet",
+        kind: "transaction",
+        operation_reference: "order-123",
+        source_event_id: "event-123",
+        locator: { network: "ethereum-mainnet", transaction_reference: "0x..." },
+      },
+    });
+
 ## Investigate issues
 
     for await (const issue of client.issues.iterateIssues({ query: { limit: 100 } })) {

@@ -22,13 +22,13 @@ URL ending in `/v2` is also accepted. The SDK never accepts internal
 
 ## Public modules
 
-The current public contract contains exactly 13 operations:
+The current public contract contains exactly 14 operations:
 
 | Module | Operations |
 | --- | --- |
 | `client.metadata` | API information and health |
 | `client.events` | List events, get an event, and list issue events |
-| `client.ingestion` | Submit monitoring events |
+| `client.ingestion` | Submit monitoring events and register on-chain evidence sources |
 | `client.issues` | List/get/update issues and manage notes |
 | `client.organization` | Get organization and list members |
 
@@ -78,6 +78,22 @@ transport/client layer instead of editing generated files directly.
 For the typed first-use walkthrough and request examples, see
 [Getting started](docs/getting-started.md), [Request options](docs/request-options.md),
 and [Workflows](docs/workflows.md).
+
+To register an on-chain evidence source for an accepted monitoring event, use a
+stable idempotency key:
+
+```ts
+const source = await client.ingestion.registerOnchainSource({
+  headers: { "Idempotency-Key": "source-order-123" },
+  body: {
+    flow: "payment_to_wallet",
+    kind: "transaction",
+    operation_reference: "order-123",
+    source_event_id: "event-123",
+    locator: { network: "ethereum-mainnet", transaction_reference: "0x..." },
+  },
+});
+```
 
 ## Release
 

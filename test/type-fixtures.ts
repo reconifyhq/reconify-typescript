@@ -1,4 +1,4 @@
-import type { APIInfo, MonitoringBatchRequest, RequestParams, ResponseBody } from "../src/index.js";
+import type { APIInfo, MonitoringBatchRequest, OnchainSourceRequest, RequestParams, ResponseBody } from "../src/index.js";
 
 const eventQuery: RequestParams<"events_list"> = {
   query: { limit: 25, after: "cursor" },
@@ -12,9 +12,14 @@ const issueAssignment: RequestParams<"issues_assign"> = {
   body: { assigned_to: null },
 };
 const metadata: ResponseBody<"api_info_get"> = {} as APIInfo;
+const onchainSource: RequestParams<"register-onchain-source"> = {
+  headers: { "Idempotency-Key": "source-123" },
+  body: {} as OnchainSourceRequest,
+};
 
 void eventQuery;
 void eventPath;
 void ingestion;
 void issueAssignment;
 void metadata;
+void onchainSource;

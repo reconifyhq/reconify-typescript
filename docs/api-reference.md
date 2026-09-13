@@ -1,7 +1,7 @@
 # API reference
 
 The supported entrypoint is @reconifyhq/sdk. The public client currently
-exposes exactly 13 operations from the public /v1 OpenAPI contract.
+exposes exactly 14 operations from the public /v2 OpenAPI contract.
 
 ## Metadata
 
@@ -40,6 +40,7 @@ exposes exactly 13 operations from the public /v1 OpenAPI contract.
 | Operation | Example |
 | --- | --- |
 | ingestMonitoringEvents | await client.ingestion.ingestMonitoringEvents({ body: batch }); |
+| registerOnchainSource | await client.ingestion.registerOnchainSource({ headers: { "Idempotency-Key": "source-123" }, body: source }); |
 
 ## Issues
 

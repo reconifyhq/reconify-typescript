@@ -1,6 +1,6 @@
 {
   "name": "@reconifyhq/sdk",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Typed TypeScript SDK for the Reconify Public API",
   "license": "MIT",
   "repository": {
@@ -51,6 +51,7 @@
     "coverage": "tsx scripts/check-openapi-coverage.ts",
     "verify": "npm run check-context7 && npm run typecheck && npm run build && npm test",
     "verify:openapi": "npm run fetch-contract && npm run check-generated && npm run coverage",
+    "release-check": "npm run verify && npm run verify:openapi && npm pack --dry-run",
     "sync-contract": "node scripts/fetch-contract.mjs --latest && npm run generate && npm run coverage",
     "prepublishOnly": "npm run verify",
     "preversion": "npm run verify"

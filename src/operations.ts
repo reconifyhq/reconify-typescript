@@ -12,6 +12,7 @@ export const publicOperations = [
   {"method":"GET","path":"/v2/issues/{issue_id}/events","operationId":"issues_list_events","methodName":"listIssueEvents","tag":"event-reads","module":"events","className":"EventsApi","requiresArgs":true},
   {"method":"GET","path":"/v2/issues/{issue_id}/notes","operationId":"issues_list_notes","methodName":"listIssueNotes","tag":"issue-operations","module":"issues","className":"IssuesApi","requiresArgs":true},
   {"method":"POST","path":"/v2/issues/{issue_id}/notes","operationId":"issues_add_note","methodName":"addIssueNote","tag":"issue-operations","module":"issues","className":"IssuesApi","requiresArgs":true},
+  {"method":"POST","path":"/v2/onchain-sources","operationId":"register-onchain-source","methodName":"registerOnchainSource","tag":"event-ingestion","module":"ingestion","className":"IngestionApi","requiresArgs":true},
   {"method":"GET","path":"/v2/organization","operationId":"organization_get","methodName":"getOrganization","tag":"organization","module":"organization","className":"OrganizationApi","requiresArgs":false},
   {"method":"GET","path":"/v2/organization/members","operationId":"organization_list_members","methodName":"listOrganizationMembers","tag":"organization","module":"organization","className":"OrganizationApi","requiresArgs":false},
 ] as const satisfies readonly PublicOperation[];

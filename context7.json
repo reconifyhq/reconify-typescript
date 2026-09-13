@@ -13,6 +13,6 @@
     "Use only the public client modules client.metadata, client.events, client.ingestion, client.issues, and client.organization.",
     "Pass typed path, query, headers, body, and request options through each operation's single argument object.",
     "Use iterateEvents, iterateIssues, or iterateIssueEvents for cursor-paginated collections where those helpers exist.",
-    "The SDK exposes exactly 13 public operations, excludes internal routes, and removes the former ledger, wallet, setup, search, alert, and reconciliation resources without compatibility aliases."
+    "The SDK exposes exactly 14 public operations, including on-chain source registration, excludes internal routes, and removes the former ledger, wallet, setup, search, alert, and reconciliation resources without compatibility aliases."
   ]
 }
