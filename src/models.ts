@@ -4,6 +4,7 @@ export type APIInfo = components["schemas"]["APIInfo"];
 export type AddNoteRequest = components["schemas"]["AddNoteRequest"];
 export type Error = components["schemas"]["Error"];
 export type Event = components["schemas"]["Event"];
+export type FinancialBreakdown = components["schemas"]["FinancialBreakdown"];
 export type Health = components["schemas"]["Health"];
 export type Issue = components["schemas"]["Issue"];
 export type ListEventsResponse = components["schemas"]["ListEventsResponse"];
@@ -15,10 +16,14 @@ export type MonitoringBatchRequest = components["schemas"]["MonitoringBatchReque
 export type MonitoringBatchResponse = components["schemas"]["MonitoringBatchResponse"];
 export type MonitoringEvent = components["schemas"]["MonitoringEvent"];
 export type MonitoringEventData = components["schemas"]["MonitoringEventData"];
+export type MonitoringIngestRequest = components["schemas"]["MonitoringIngestRequest"];
 export type MonitoringResult = components["schemas"]["MonitoringResult"];
 export type MonitoringSchema = components["schemas"]["MonitoringSchema"];
 export type Note = components["schemas"]["Note"];
+export type OnchainSourceRequest = components["schemas"]["OnchainSourceRequest"];
+export type OnchainSourceResponse = components["schemas"]["OnchainSourceResponse"];
 export type Organization = components["schemas"]["Organization"];
 export type PatchIssueRequest = components["schemas"]["PatchIssueRequest"];
+export type SettlementAllocation = components["schemas"]["SettlementAllocation"];
 
 export type { components };

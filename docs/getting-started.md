@@ -17,7 +17,7 @@ default.
     });
 
 The key is sent as Authorization: Bearer <apiKey>. Store it in an environment
-variable or secret manager. The client accepts a URL with or without /v1 and
+variable or secret manager. The client accepts a URL with or without /v2 and
 normalizes trailing slashes.
 
 ## Submit monitoring events
@@ -37,6 +37,20 @@ normalizes trailing slashes.
 
 Keep event IDs stable when retrying ingestion. The API returns per-event
 accepted, duplicate, or rejected results.
+
+To queue on-chain enrichment for an accepted event, provide a stable
+idempotency key and the source locator:
+
+    const source = await client.ingestion.registerOnchainSource({
+      headers: { "Idempotency-Key": "source-order-123" },
+      body: {
+        flow: "payment_to_wallet",
+        kind: "transaction",
+        operation_reference: "order-123",
+        source_event_id: "event-123",
+        locator: { network: "ethereum-mainnet", transaction_reference: "0x..." },
+      },
+    });
 
 ## Read events and issues
 

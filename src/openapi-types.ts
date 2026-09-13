@@ -39,7 +39,7 @@ export interface paths {
         put?: never;
         /**
          * Submit monitoring events
-         * @description Durably acknowledge a batch of 1–500 flow-monitoring events. Each event is validated independently; accepted and rejected indexes are returned together.
+         * @description Durably acknowledge one event or a batch of 1–500 flow-monitoring events. Each event is validated independently; accepted and rejected indexes are returned together.
          */
         post: operations["events_ingest"];
         delete?: never;
@@ -176,6 +176,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v2/onchain-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register an onchain evidence source
+         * @description Starts bounded, observation-only blockchain enrichment for an accepted monitoring event.
+         */
+        post: operations["register-onchain-source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v2/organization": {
         parameters: {
             query?: never;
@@ -250,8 +270,18 @@ export interface components {
             title?: string;
         };
         Event: {
+            /** @description Number of settlement allocations captured. */
+            allocation_count?: number;
+            /** @description Complete settlement allocations on event detail responses. */
+            allocations?: unknown[];
             /** @description Normalized decimal amount, when present. */
             amount?: string | null;
+            /** @description Optional identifier of the single earlier event that led to this event. */
+            causation_id?: string;
+            /** @description Number of financial components captured. */
+            component_count?: number;
+            /** @description Optional broader context identifier shared across related events. */
+            correlation_id?: string;
             /** @description Three-letter ISO currency code, when present. */
             currency?: string | null;
             /** @description Target identifier derived from the event flow. */
@@ -260,19 +290,25 @@ export interface components {
              * @description Target type derived from the event flow.
              * @enum {string}
              */
-            entity_type: "wallet" | "order";
+            entity_type: "wallet" | "order" | "settlement_account";
             /**
              * @description Lifecycle evidence type.
              * @enum {string}
              */
-            event_type: "order.fulfilled" | "payment.failed" | "payment.initiated" | "payment.succeeded" | "payout.failed" | "payout.initiated" | "payout.succeeded" | "wallet.credited" | "wallet.debited" | "wallet.refunded";
+            event_type: "order.fulfilled" | "payment.failed" | "payment.initiated" | "payment.succeeded" | "payout.failed" | "payout.initiated" | "payout.succeeded" | "settlement.allocations_recorded" | "settlement.created" | "settlement.disbursed" | "settlement.failed" | "settlement.finalized" | "settlement.received" | "settlement.revised" | "wallet.credited" | "wallet.debited" | "wallet.refunded";
+            /** @description Complete financial breakdown on event detail responses. */
+            financial_breakdown?: Record<string, never>;
             /**
              * @description Monitored money-movement flow.
              * @enum {string}
              */
-            flow: "payment_to_wallet" | "payment_to_order" | "wallet_to_wallet" | "wallet_to_payout";
+            flow: "payment_to_wallet" | "payment_to_order" | "wallet_to_wallet" | "wallet_to_payout" | "provider_to_settlement_account";
+            /** @description Settlement gross amount summary, when present. */
+            gross?: string | null;
             /** @description Stable event identifier. */
             id: string;
+            /** @description Settlement net amount summary, when present. */
+            net?: string | null;
             /**
              * Format: date-time
              * @description When the source event occurred.
@@ -287,11 +323,34 @@ export interface components {
             received_at: string;
             /** @description Customer-supplied operation reference. */
             reference: string;
+            /** @description Prior event revised by this event, when present. */
+            revises_event_id?: string | null;
             /**
              * @description Asynchronous receipt processing state.
              * @enum {string}
              */
             status: "received" | "published" | "processed" | "failed";
+        };
+        FinancialBreakdown: {
+            components: {
+                amount: string;
+                /** @description Provider-supplied description of the component. */
+                description?: string;
+                /** @enum {string} */
+                effect: "add" | "deduct" | "included";
+                /** @enum {string} */
+                kind: "fee" | "commission" | "tax" | "reserve" | "adjustment" | "other";
+                /** @description Optional flat provider context retained with the component. */
+                metadata?: {
+                    [key: string]: string | number | boolean;
+                };
+                /** @description Opaque provider-defined component type. */
+                provider_type?: string;
+                /** @description Provider-supplied component reference. */
+                reference?: string;
+            }[];
+            gross: string;
+            net: string;
         };
         Health: {
             /**
@@ -385,6 +444,8 @@ export interface components {
         MonitoringEvent: {
             /** @description Decimal amount in the event currency. */
             amount?: string;
+            /** @description Optional opaque identifier for the single earlier event that caused this event. It is not resolved at ingest. */
+            causation_id?: string;
             /** @description Optional producer-supplied opaque identifier propagated across services. Do not include secrets or personal data. */
             correlation_id?: string;
             /** @description Three-letter uppercase ISO currency code. */
@@ -393,11 +454,12 @@ export interface components {
             data?: components["schemas"]["MonitoringEventData"];
             /** @description Target identifier. Its entity type is derived from the selected flow. */
             entity_id: string;
+            financial_breakdown?: components["schemas"]["FinancialBreakdown"];
             /**
              * @description Monitoring flow that defines the expected evidence sequence.
              * @enum {string}
              */
-            flow: "payment_to_wallet" | "payment_to_order" | "wallet_to_wallet" | "wallet_to_payout";
+            flow: "payment_to_wallet" | "payment_to_order" | "wallet_to_wallet" | "wallet_to_payout" | "provider_to_settlement_account";
             /** @description Optional stable ULID used to identify the event across retries. */
             id?: string;
             /** @description Optional flat key-value context retained with the event. */
@@ -415,9 +477,10 @@ export interface components {
              * @description Lifecycle event type, such as payment.succeeded.
              * @enum {string}
              */
-            type: "order.fulfilled" | "payment.failed" | "payment.initiated" | "payment.succeeded" | "payout.failed" | "payout.initiated" | "payout.succeeded" | "wallet.credited" | "wallet.debited" | "wallet.refunded";
+            type: "order.fulfilled" | "payment.failed" | "payment.initiated" | "payment.succeeded" | "payout.failed" | "payout.initiated" | "payout.succeeded" | "settlement.allocations_recorded" | "settlement.created" | "settlement.disbursed" | "settlement.failed" | "settlement.finalized" | "settlement.received" | "settlement.revised" | "wallet.credited" | "wallet.debited" | "wallet.refunded";
         };
         MonitoringEventData: {
+            allocations?: components["schemas"]["SettlementAllocation"][];
             /** @description Stable provider or source code for a failed event. */
             failure_code?: string;
             /** @description Human-readable failure context from the source system. */
@@ -432,7 +495,11 @@ export interface components {
             provider_transaction_id?: string;
             /** @description Whether the source considers the failed event retryable. */
             retryable?: boolean;
+            /** @description Producer-supplied prior event ID claim. */
+            revises_event_id?: string;
         };
+        /** @description Submit one event, a bare array of events, or the backward-compatible events wrapper. */
+        MonitoringIngestRequest: components["schemas"]["MonitoringEvent"] | components["schemas"]["MonitoringEvent"][] | components["schemas"]["MonitoringBatchRequest"];
         MonitoringResult: {
             /**
              * @description Stable machine-readable code for a rejected item.
@@ -480,6 +547,33 @@ export interface components {
             /** @description Stable note identifier. */
             id: string;
         };
+        OnchainSourceRequest: {
+            flow: string;
+            /** @enum {string} */
+            kind: "provider_payment" | "transaction" | "address_reference";
+            locator: {
+                integration_ref?: string;
+                /** @enum {string} */
+                network?: "ethereum-mainnet" | "ethereum-sepolia" | "solana-mainnet" | "solana-devnet";
+                protocol_reference?: string;
+                provider_reference?: string;
+                provider_transaction_id?: string;
+                receiving_address?: string;
+                transaction_reference?: string;
+                /** Format: date-time */
+                window_end?: string;
+                /** Format: date-time */
+                window_start?: string;
+            };
+            operation_reference: string;
+            source_event_id: string;
+        };
+        OnchainSourceResponse: {
+            duplicate: boolean;
+            id: string;
+            /** @enum {string} */
+            status: "queued";
+        };
         Organization: {
             /**
              * Format: date-time
@@ -497,6 +591,15 @@ export interface components {
         PatchIssueRequest: {
             /** @description Organization member ID to assign, or null to unassign. */
             assigned_to: string | null;
+        };
+        SettlementAllocation: {
+            allocation_id: string;
+            /** @enum {string} */
+            allocation_type: "payment" | "refund" | "chargeback";
+            amount: string;
+            event_id?: string;
+            flow: string;
+            reference: string;
         };
     };
     responses: never;
@@ -606,7 +709,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MonitoringBatchRequest"];
+                "application/json": components["schemas"]["MonitoringIngestRequest"];
             };
         };
         responses: {
@@ -1197,6 +1300,53 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Error"];
                 };
+            };
+        };
+    };
+    "register-onchain-source": {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnchainSourceRequest"];
+            };
+        };
+        responses: {
+            /** @description Source queued */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnchainSourceResponse"];
+                };
+            };
+            /** @description Invalid source */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid provenance */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

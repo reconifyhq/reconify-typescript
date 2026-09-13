@@ -56,8 +56,9 @@ for (const file of requiredDocs.slice(1)) {
   if (!llms.includes(`/blob/main/${file}`)) throw new Error(`llms.txt does not link to ${file}`);
 }
 
-const packageFiles = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json"], { encoding: "utf8" }));
-const packedFiles = new Set(packageFiles[0]?.files?.map(({ path }) => path) ?? []);
+const packResult = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json"], { encoding: "utf8" }));
+const packageMetadata = Array.isArray(packResult) ? packResult[0] : Object.values(packResult)[0];
+const packedFiles = new Set(packageMetadata?.files?.map(({ path }) => path) ?? []);
 for (const file of ["README.md", "context7.json", "llms.txt", ...requiredDocs.slice(1)]) {
   if (!packedFiles.has(file)) throw new Error(`npm pack does not include ${file}`);
 }

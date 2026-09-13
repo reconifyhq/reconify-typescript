@@ -1,3 +1,10 @@
+# Upgrading to 2.1.0
+
+The 2.1.0 client adds `client.ingestion.registerOnchainSource` for queuing
+observation-only blockchain enrichment for an accepted monitoring event. The
+operation requires an `Idempotency-Key` header and uses the generated
+`OnchainSourceRequest` and `OnchainSourceResponse` types.
+
 # Upgrading to 2.0.0
 
 The 2.0.0 client targets the public Reconify v2 contract at `/v2`.

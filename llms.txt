@@ -2,8 +2,9 @@
 
 > A typed TypeScript client for the Reconify Public API, published as @reconifyhq/sdk.
 
-The SDK targets the current 13-operation public contract: metadata, events,
-monitoring ingestion, issues, and organization/member reads. It provides
+The SDK targets the current 14-operation public contract: metadata, events,
+monitoring ingestion including on-chain source registration, issues, and
+organization/member reads. It provides
 cancellation, request timeouts, retries, structured API errors, cursor
 pagination, and generated OpenAPI types.
 

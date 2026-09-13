@@ -50,6 +50,33 @@ describe("ReconifyClient", () => {
     }
   });
 
+  it("registers an on-chain source with idempotency and typed payloads", async () => {
+    let request: Request | undefined;
+    const client = new ReconifyClient({
+      apiKey: "rk_test",
+      baseUrl: "https://api.example.test",
+      fetch: async (input, init) => {
+        request = new Request(input, init);
+        return response({ id: "source-1", duplicate: false, status: "queued" }, 202);
+      },
+    });
+
+    await expect(client.ingestion.registerOnchainSource({
+      headers: { "Idempotency-Key": "source-123" },
+      body: {
+        flow: "payment_to_wallet",
+        kind: "transaction",
+        operation_reference: "order-123",
+        source_event_id: "event-123",
+        locator: { network: "ethereum-mainnet", transaction_reference: "0xabc" },
+      },
+    })).resolves.toEqual({ id: "source-1", duplicate: false, status: "queued" });
+    expect(request?.url).toBe("https://api.example.test/v2/onchain-sources");
+    expect(request?.method).toBe("POST");
+    expect(request?.headers.get("idempotency-key")).toBe("source-123");
+    expect(await request?.json()).toMatchObject({ source_event_id: "event-123" });
+  });
+
   it("raises a typed error with the problem response body", async () => {
     const client = new ReconifyClient({
       apiKey: "rk_test",
